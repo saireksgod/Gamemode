@@ -52,7 +52,8 @@ new const AloginTxt[] =						"{ff9300}[Ошибка]{ffffff} Вы не авторизированы, исп
 forward OnSecondTimer();
 forward OnMinuteTimer();
 forward StopChatAnim(playerid);
-forward OnPlayerTimer();
+forward OnPlayerTimer(playerid);
+
 // == == == == [ Переменные ] == == == ==
 new str_1[4096],
 	str_2[4096],
