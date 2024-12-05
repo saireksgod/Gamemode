@@ -461,7 +461,7 @@ stock GiveMoney(playerid, money)
 	GameText(playerid, str_1, 3000, 2);
 
 	format(str_1, sizeof str_1, "window.interface('Hud').info.money = %s", GetPlayerMoneyEx(playerid));
-	SendPacket(1, playerid, CefUpdate, str_1);
+	SendPacket( playerid, CefUpdate, str_1);
 	return 1;
 }
 stock Clear(playerid)
@@ -474,7 +474,7 @@ stock SetPlayerSpawn(playerid)
 {
     SetPlayerScore(playerid, pInfo[playerid][P_LEVEL]);
     format(str_1, sizeof str_1, "window.interface('Hud').info.money = '%s'", GetPlayerMoneyEx(playerid));
-	SendPacket(1, playerid, CefUpdate, str_1);
+	SendPacket( playerid, CefUpdate, str_1);
 	SetPlayerSkin(playerid, pInfo[playerid][P_SKIN]);
 	SetCameraBehindPlayer(playerid);
 	PlayerSpawn(playerid);

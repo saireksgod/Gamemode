@@ -169,8 +169,8 @@ stock ShowCefPublic(playerid, const id, BitStream:bsd) {
 stock GameText(playerid, const string[], time, style)
 {
 	f(str_1, sizeof str_1, "interface('GameText').add('[%d,\"%s\",%d,0,-1,1]')", style, string, time);
-	SendPacket(1,playerid, CefUpdate, str_1);
- 	SendPacket(1, playerid, CefShow, "GameText");
+	SendPacket(playerid, CefUpdate, str_1);
+ 	SendPacket( playerid, CefShow, "GameText");
 	return 1;
 }
 
@@ -184,7 +184,7 @@ stock ShowDialog(playerid, dialogid, style,const caption[],const info[],const bu
 		strins(str_d, "<n>", i);
 	}
 	format(str_d, sizeof str_d, "window.addDialogInQueue('[%i,%i,\"%s\",\"%s\",\"%s\",\"%s\",%d,%d]', \"%s\", %d)", dialogid, style, caption,Zagalovok, button1, button2, BackButton,FrontButton,str_d,IDButton);
-	SendPacket(1,playerid, CefUpdate, str_d);
+	SendPacket(playerid, CefUpdate, str_d);
 	return 1;
 }
 stock SendPacket_Chat(playerid, g, status)
@@ -197,7 +197,7 @@ stock SendPacket_Chat(playerid, g, status)
 	PR_SendPacket(bsn, playerid);
 	return BS_Delete(bsn);
 }
-stock SendPacket(view, playerid, CefType:type, const string[], const string2[]="")
+stock SendPacket(playerid, CefType:type, const string[], const string2[]="")
 {
 	if(type == CefHide || type == CefShow) {
 		new id = GetInterfaceID(string);
@@ -208,11 +208,11 @@ stock SendPacket(view, playerid, CefType:type, const string[], const string2[]="
 		PR_UINT8, 215,
 		PR_UINT16, 2,
 		PR_UINT32, _:type,
-		PR_UINT8, view
+		PR_UINT8, strlen(string2) ? 2 : 1
 	);
 	BS_WriteValue(bsn,PR_UINT32, strlen(string),PR_STRING, string, strlen(string));
 
-	if(view == 2) BS_WriteValue(bsn,PR_UINT32, strlen(string2),PR_STRING, string2, strlen(string2));
+	if(strlen(string2)) BS_WriteValue(bsn,PR_UINT32, strlen(string2),PR_STRING, string2, strlen(string2));
 
     PR_SendPacket(bsn, playerid);
     return BS_Delete(bsn);
@@ -248,4 +248,4 @@ stock SetPlayerGameStateConnection(playerid)
 	BS_Delete(bsn);
 	return 1;
 }
-public: EndedInitializeBrowser(playerid,const dest[]) return SendPacket(1,playerid, CefUpdate, "confirmBrowserInitialize()");
+public: EndedInitializeBrowser(playerid,const dest[]) return SendPacket(playerid, CefUpdate, "confirmBrowserInitialize()");

@@ -95,11 +95,11 @@ public OnPlayerEnterDynamicArea(playerid, areaid)
             format(str_1, sizeof str_1, "[%d, \"Дом №%d\", \"%s\", \"%s\", %d, %d, %d]",
             g_houses[i][hLock], i, g_houses[i][hOwnerName], g_type_houses[g_houses[i][hType]][hName],
 	        g_type_houses[g_houses[i][hType]][hRooms], g_houses[i][hRentPrice],g_houses[i][hPrice]);
-            SendPacket(2, playerid, CefShow, "Appartament", str_1);
+            SendPacket( playerid, CefShow, "Appartament", str_1);
             break;
         }
         if(areaid == g_houses[i][hESphere]) {
-            SendPacket(2, playerid, CefShow, "Interactions", "[[0, \"Использовать дверь\"]]");
+            SendPacket( playerid, CefShow, "Interactions", "[[0, \"Использовать дверь\"]]");
         }
     }
     #if defined House_OnPlayerEnterDynamicArea
@@ -121,11 +121,11 @@ public OnPlayerLeaveDynamicArea(playerid, areaid)
     for(new i; i < MAX_HOUSE; i++) {
         if(areaid == g_houses[i][hSphere]) {
             g_player_house[playerid] = -1;
-            SendPacket(1, playerid, CefHide, "Appartament");
+            SendPacket( playerid, CefHide, "Appartament");
             break;
         }
         if(areaid == g_houses[i][hESphere]) {
-            SendPacket(1, playerid, CefHide, "Interactions");
+            SendPacket( playerid, CefHide, "Interactions");
             break;
         }
     }
@@ -165,7 +165,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
     if(newkeys == 1024) {
         if(g_player_house[playerid] == -1) {
-            SendPacket(1, playerid, CefHide, "Appartament");
+            SendPacket( playerid, CefHide, "Appartament");
             new houseid = g_player_house[playerid];
             if(houseid == -1) return SendClientMessage(playerid, 0xCECECEFF, !"Произошла техническая ошибка.");
             new house_type = g_houses[houseid][hType];

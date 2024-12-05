@@ -73,77 +73,16 @@ stock CheckAdmin(playerid, level=1, CheckAutorizaction=1)
 	return 1;
 }
 stock TextFind(const text[], const charect[]) return (strfind(text,charect) != -1);
-stock formatInt(amount, delimiter[2] = ".")
+stock formatInt(number)
 {
-	new int_string[15];
-	format(int_string, sizeof(int_string), "%i", amount >= 0 ? amount : -amount);
-	new value = strlen(int_string);
-	switch(value)
-	{
-		case 4..6:
-		strins(int_string, delimiter, value - 3);
-		case 7..9:
-		strins(int_string, delimiter, value - 3),
-		strins(int_string, delimiter, value - 6);
-		case 10..12:
-		strins(int_string, delimiter, value - 3),
-		strins(int_string, delimiter, value - 6),
-		strins(int_string, delimiter, value - 9);
-	}
-	if(amount < 0) strins(int_string, "-", 0);
-	new money[16];
-	format(money, sizeof(money), "%s", int_string);
-	return money;
+    static number_text[17];
+    format(number_text, sizeof(number_text), "%d", number);
+
+    for(new i = (strlen(number_text) - 3); i > (number < 0 ? 1 : 0); i -= 3)
+        strins(number_text[i], "." , 0);
+
+    return number_text;
 }
-stock formatStr(amount[], delimiter[2] = ".")
-{
-	new money[32];
-	if(strlen(amount) < 18)
-	{
-		new int_string[MAX_MONEY_SYMBOLS];
-		format(int_string, sizeof(int_string), "%s", amount);
-
-		new status;
-
-		if(strfind(int_string,"-") != -1) strdel(int_string, 0, 1), status = 1;
-
-		new value = strlen(int_string);
-
-		switch(value)
-		{
-			case 4..6:
-				strins(int_string, delimiter, value - 3);
-
-			case 7..9:
-				strins(int_string, delimiter, value - 3),
-				strins(int_string, delimiter, value - 6);
-
-			case 10..12:
-				strins(int_string, delimiter, value - 3),
-				strins(int_string, delimiter, value - 6),
-				strins(int_string, delimiter, value - 9);
-			case 13..15:
-				strins(int_string, delimiter, value - 3,),
-				strins(int_string, delimiter, value - 6,),
-				strins(int_string, delimiter, value - 9,),
-				strins(int_string, delimiter, value - 12);
-			case 16..18:
-				strins(int_string, delimiter, value - 3),
-				strins(int_string, delimiter, value - 6),
-				strins(int_string, delimiter, value - 9),
-				strins(int_string, delimiter, value - 12),
-				strins(int_string, delimiter, value - 15);
-		}
-
-		if(status == 1) strins(int_string, "-", 0);
-
-		format(money, sizeof(money), "%s", int_string);
-
-		return money;
-	}
-	return money;
-}
-
 #define MAX_MONEY_SYMBOLS	23
 
 new player_int_count_1[MAX_PLAYERS][MAX_MONEY_SYMBOLS];

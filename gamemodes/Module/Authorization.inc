@@ -32,81 +32,94 @@ public: OnRegistrationData(playerid,params[])
 	if(!IsValidText(password)) return GameText(playerid, "~r~Вы ввели неправильный пароль", 3000, 2);
 	if(!IsValidEMail(email)) return GameText(playerid, "~y~Вы ввели неправильную почту", 3000, 2);
 
-	f(pInfo[playerid][P_PASS], 32, "%s", password);
-	f(pInfo[playerid][P_EMAIL], 46, "%s", email);
+	format(pInfo[playerid][P_PASS], 32, password);
+	format(pInfo[playerid][P_EMAIL], 46, email);
 
-	SendPacket(1,playerid, CefUpdate, "interface('Authorization').setRegistrationStage(2)");
+	SendPacket(playerid, CefUpdate, "interface('Authorization').setRegistrationStage(2)");
     GetPlayerStateLogged(playerid)++;
     return 1;
 }
-public: OnRegistrationCharacter(playerid,const params[])
+public: OnRegistrationCharacter(playerid, const params[])
 {
-	extract params-> new event,sex,skin;else return 1;
+	extract params -> new event, sex, skin; else return 1;
     if(GetPlayerStateLogged(playerid) != 8) return Kick:(playerid);
-    static const skins[] = {89,15345,15352,88,39,38,75,15522,78,135,137,212,213,230,15327,15353,15354,15355,15524,15525};
-    switch(event)
-    {
-         case 1: SendPacket(1,playerid, CefUpdate, "interface('Authorization').setRegistrationStage(3)"),GetPlayerStateLogged(playerid)++;
-         case 0:
-         {
-            switch(sex) {
-                case 0: {
-                    SendPacket(1,playerid, CefUpdate, "interface('Authorization').setSkins('[78,135,137,212,213,230,15327,15353,15354,15355,15524,15525]')");
-                    pInfo[playerid][P_SKIN] = skins[skin+8];
-                    pInfo[playerid][P_SEX] = 1;
-	            }
-	            case 1: {
-	                SendPacket(1,playerid, CefUpdate, "interface('Authorization').setSkins('[89,15345,15352,88,39,38,75,15522]')");
-                    pInfo[playerid][P_SKIN] = skins[skin];
-                    pInfo[playerid][P_SEX] = 2;
-	            }
-				default: return 1;
-            }
-			if(IsValidActor(pInfo[playerid][pRegActor][6])) DestroyActor(pInfo[playerid][pRegActor][6]);
-			pInfo[playerid][pRegActor][6] = CreateActor(pInfo[playerid][P_SKIN], 237.7539, 2772.2974, 13.3922, 332.5087);
-			SetActorVirtualWorld(pInfo[playerid][pRegActor][6], playerid + 5);
-			SetActorInvulnerable(pInfo[playerid][pRegActor][6], true);
-			ApplyActorAnimation(pInfo[playerid][pRegActor][6], RegActor[6][rAnim1], RegActor[6][rAnim2],  4.1, 1, 0, 0, 1, 0);
-         }
-    }
+
+	static gRegistrationSkin[][] =
+	{
+		{78,135,137,212,213,230,15327,15353,15354,15355,15524,15525},
+		{89,15345,15352,88,39,38,75,15522, -1, -1, -1, -1}
+	};
+
+	if(event == 0)
+	{
+		if(sex == 0) SendPacket(playerid, CefUpdate, "interface('Authorization').setSkins('[78,135,137,212,213,230,15327,15353,15354,15355,15524,15525]')");
+		else SendPacket(playerid, CefUpdate, "interface('Authorization').setSkins('[89,15345,15352,88,39,38,75,15522]')");
+
+		pInfo[playerid][P_SEX] = sex;
+		pInfo[playerid][P_SKIN] = gRegistrationSkin[sex][skin];
+		
+		pInfo[playerid][pRegActor][6] = CreateActor(pInfo[playerid][P_SKIN], 237.7539, 2772.2974, 13.3922, 332.5087);
+		SetActorVirtualWorld(pInfo[playerid][pRegActor][6], playerid + 5);
+
+		SetActorInvulnerable(pInfo[playerid][pRegActor][6], true);
+		ApplyActorAnimation(pInfo[playerid][pRegActor][6], RegActor[6][rAnim1], RegActor[6][rAnim2],  4.1, 1, 0, 0, 1, 0);
+	}
+	else
+	{
+		GetPlayerStateLogged(playerid)++;
+		SendPacket(playerid, CefUpdate, "interface('Authorization').setRegistrationStage(3)");
+	}
     return 1;
 }
-public: OnRegistrationBonuses(playerid,const name[])
+public: OnRegistrationBonuses(playerid, const name[])
 {
     if(GetPlayerStateLogged(playerid) != 9) return Kick:(playerid);
     if(strlen(name) > 0)
-    {
-        str_q[0] = EOS;
-		format(str_q, sizeof str_q, "SELECT * FROM users WHERE Name='%s' LIMIT 1", name);
-		new Cache:result = mysql_query(mysql, str_q, true);
-        if(!cache_num_rows()) return SendPacket(1,playerid, CefUpdate, "interface('Authorization').setError(\"referral\", \"Некорректный ник игрока\")"),cache_delete(result);
-		new id = cache_get_field_content_int(0, "id");
-        cache_delete(result);
-        CreatePlayerAccount(playerid);
-        UpdateDataInt(playerid, "Referal", id);
-        pInfo[playerid][pReferal] = id;
+    {	
+		mysql_format(mysql, str_q, sizeof(str_q), "SELECT id FROM users WHERE Name='%e' LIMIT 1", name);
+		mysql_tquery(mysql, str_q, "CheckReferalName", "i", playerid);
     }
-    GetPlayerStateLogged(playerid)=1;
-    CreatePlayerAccount(playerid);
+	else CreatePlayerAccount(playerid);
     return 1;
 }
+
+public:CheckReferalName(playerid)
+{
+	if(!cache_num_rows()) return SendPacket(playerid, CefUpdate, "interface('Authorization').setError(\"referral\", \"Некорректный ник игрока\")");
+	pInfo[playerid][pReferal] = cache_get_row_int(0, 0);
+	CreatePlayerAccount(playerid);
+	return true;
+}
+
 stock CreatePlayerAccount(playerid)
 {   
     if(IsPlayerLogged(playerid)) return 0;
 	if(!pInfo[playerid][P_EMAIL]) return GameText(playerid, "~r~Вы не ввели почту", 3000, 2);
 	if(!pInfo[playerid][P_PASS]) return GameText(playerid, "~r~Вы не ввели пароль", 3000, 2);
-    if(IsValidDynamicObject(pInfo[playerid][pRegisterObj])) DestroyDynamicObject(pInfo[playerid][pRegisterObj]);
+    
+	if(IsValidDynamicObject(pInfo[playerid][pRegisterObj])) DestroyDynamicObject(pInfo[playerid][pRegisterObj]);
     for(new i; i < 7; i++) if(IsValidActor(pInfo[playerid][pRegActor][i])) DestroyActor(pInfo[playerid][pRegActor][i]);
-    mysql_format(mysql, str_q, sizeof str_q, "INSERT INTO users (Name,Pass,Email, Sex, Skin, Level,reg_ip,last_ip,Money) \
-    VALUES ('%e','%e','%e','%d','%d','2','%e','%e','"ServerBonus"')",PN(playerid), pInfo[playerid][P_PASS], pInfo[playerid][P_EMAIL],pInfo[playerid][P_SEX],pInfo[playerid][P_SKIN],pInfo[playerid][P_IP],pInfo[playerid][P_IP]);
-    new Cache:result = mysql_query(mysql, str_q, true);
+    
+	mysql_format
+	(
+		mysql, str_q, sizeof str_q, "INSERT INTO users (Name,Pass,Email, Sex, Skin, Level,reg_ip,last_ip,Money,Referal) \
+			VALUES ('%e','%e','%e','%d','%d','2','%e','%e','"ServerBonus"', '%d')",
+
+		PN(playerid), pInfo[playerid][P_PASS], pInfo[playerid][P_EMAIL],
+		pInfo[playerid][P_SEX], pInfo[playerid][P_SKIN],
+		pInfo[playerid][P_IP], pInfo[playerid][P_IP],
+		pInfo[playerid][pReferal]
+	);
+    
+	new Cache:result = mysql_query(mysql, str_q, true);
     pInfo[playerid][P_ID] = cache_insert_id();
-    //GiveItem(playerid, 0,0,3);
-   // GiveItem(playerid, pInfo[playerid][P_SKIN],1,2);
+
     cache_delete(result);
-    SendPacket(1,playerid, CefHide, "Authorization");
+    
+	SendPacket(playerid, CefHide, "Authorization");
     LoadPlayerData(playerid);
-    return 1;
+    
+	return 1;
 }
 
 stock IsValidEMail(const email[])
@@ -118,14 +131,17 @@ stock IsValidEMail(const email[])
 
 stock ValidEmailChar(mailchar)
 {
-	if((mailchar >= 'A' && mailchar <= 'Z') || (mailchar >= 'a' && mailchar <= 'z') || (mailchar >= '0' && mailchar <= '9') || (mailchar == '-') || (mailchar == '_') || (mailchar == '@') || (mailchar == '.')) return 1;
+	switch(mailchar)
+	{
+		case 'A'..'Z', 'a'..'z', '0'..'9', '-', '_', '@', '.': return 1;
+	}
 	return 0;
 }
 
 
 public: CheckPlayerAccount(playerid)
 {
-	SendPacket(1,playerid, CefUpdate, "confirmBrowserInitialize()");
+	SendPacket(playerid, CefUpdate, "confirmBrowserInitialize()");
 	SetPlayerWeather(playerid,1);
 	mysql_format(mysql, str_q, sizeof str_q, "SELECT * FROM users WHERE Name = '%s' LIMIT 1", PN(playerid));
 	new Cache:result = mysql_query(mysql, str_q,true);
@@ -142,27 +158,27 @@ public: CheckPlayerAccount(playerid)
             cache_get_field_content(0, "last_ip", GetPlayerData(playerid,P_LASTIP));
 			cache_get_field_content(0,"Pass",pInfo[playerid][P_PASS],mysql,33);
 			format(str_1, sizeof str_1, "[\"auth\", \"%s\", "ServerNumber", 1, "ServerHalloween", "ServerNewYear","ServerPasha"]", PN(playerid));
-			SendPacket(2,playerid, CefShow, "Authorization", str_1);
+			SendPacket(playerid, CefShow, "Authorization", str_1);
             GetPlayerStateLogged(playerid) = 2;
 		}
 		else {
+			pInfo[playerid][pReferal] = -1;
             GetPlayerStateLogged(playerid) = 7;
 			SetPlayerVirtualWorld(playerid, playerid + 5);
 			pInfo[playerid][P_SKIN] = 78;
 			pInfo[playerid][P_SEX] = 1;
 			pInfo[playerid][P_ID] = -1;
 			GameText(playerid, "~y~Загрузка", 2000, 1);
-			SendPacket(1, playerid, CefUpdate, "playSound('sounds/train/stop.mp3', 0, 1)");
-			SendPacket(1, playerid, CefUpdate, "hideInterface('Hud')");
-			SendPacket(2, playerid, CefShow, "Overlay", "[1000, 3000]");
-			SendPacket(2, playerid, CefShow, "Authorization", "[\"register\", [78,135,137,212,213,230,15327,15353,15354,15355,15524,15525], "ServerNumber", 1, "ServerHalloween", "ServerNewYear","ServerPasha"]");
+			SendPacket( playerid, CefUpdate, "playSound('sounds/train/stop.mp3', 0, 1)");
+			SendPacket( playerid, CefUpdate, "hideInterface('Hud')");
+			SendPacket( playerid, CefShow, "Overlay", "[1000, 3000]");
+			SendPacket( playerid, CefShow, "Authorization", "[\"register\", [78,135,137,212,213,230,15327,15353,15354,15355,15524,15525], "ServerNumber", 1, "ServerHalloween", "ServerNewYear","ServerPasha"]");
 			pInfo[playerid][pRegisterObj] = CreateDynamicObject(10926, 231.011900, 2773.229980,13.400000, 0.000000, 0.000000, -90.0, playerid + 5);
 			for(new i; i < 7; i++)
 			{
 				pInfo[playerid][pRegActor][i] = CreateActor(RegActor[i][rSkin], RegActor[i][rPos][0], RegActor[i][rPos][1], RegActor[i][rPos][2], RegActor[i][rPos][3]);
 				SetActorVirtualWorld(pInfo[playerid][pRegActor][i], playerid + 5);
 				SetActorInvulnerable(pInfo[playerid][pRegActor][i], true);
-				ApplyActorAnimation(pInfo[playerid][pRegActor][i], RegActor[i][rAnim1], RegActor[i][rAnim2],  4.1, 1, 0, 0, 1, 0);
 				ApplyActorAnimation(pInfo[playerid][pRegActor][i], RegActor[i][rAnim1], RegActor[i][rAnim2],  4.1, 1, 0, 0, 1, 0);
 			}
 			SetSpawnInfo(playerid, 0, 78, 245.5628, 2772.1128, 12.9705, 337.2245, 0, 0, 0, 0, 0, 0);
@@ -200,18 +216,17 @@ public: OnAuthorizationStart(playerid,const dest[])
         {
             pInfo[playerid][pWrongPassword] ++;
             f(str_1, sizeof str_1, "interface('Authorization').$refs.auth.setError(\"password\", \"Неверный пароль. Осталось попыток: %d\")",3-pInfo[playerid][pWrongPassword]);
-			SendPacket(1,playerid, CefUpdate, str_1);
+			SendPacket(playerid, CefUpdate, str_1);
 			if(pInfo[playerid][pWrongPassword] == 3) return Kick:(playerid);
         }
         else {
-            SendPacket(1,playerid, CefHide, "Authorization");
-            SendPacket(2,playerid, CefShow, "Loading", "[3000]");
+            SendPacket(playerid, CefHide, "Authorization");
+            SendPacket(playerid, CefShow, "Loading", "[3000]");
 			pInfo[playerid][pWrongPassword]=0;
-            GetPlayerStateLogged(playerid) = 1;
             LoadPlayerData(playerid);
         }
     }
-	else SendPacket(1, playerid, CefUpdate, "interface('Authorization').$refs.auth.setError(\"password\", \"Некорректная длинна пароля\")");
+	else SendPacket( playerid, CefUpdate, "interface('Authorization').$refs.auth.setError(\"password\", \"Некорректная длинна пароля\")");
     return 1;
 }
 stock OnAuthorizationCode(playerid,code[])
@@ -229,6 +244,8 @@ stock LoadPlayerData(playerid)
 	if(cache_num_rows())
 	{
 		IsPlayerLogged(playerid) = true;
+		GetPlayerStateLogged(playerid) = 1;
+
 		cache_get_field_content(0, "Email", pInfo[playerid][P_EMAIL], mysql, 46+1);
 		cache_get_field_content(0, "Pass", pInfo[playerid][P_PASS], mysql, 32+1);
 		pInfo[playerid][P_SEX] = cache_get_field_content_int(0, "Sex");
@@ -241,9 +258,9 @@ stock LoadPlayerData(playerid)
 		pInfo[playerid][P_FULLNESS] = cache_get_field_content_int(0, "Fullness");
 		pInfo[playerid][pReferal] = cache_get_field_content_int(0, "Referal");
 		cache_get_field_content(0, "AdminPassword", pInfo[playerid][pAdmPass], mysql, 32+1);
-		SendPacket(1,playerid, CefUpdate, "showInterface('Hud')");
-		SendPacket(1,playerid, CefUpdate, "client.setHudStatus(true)");
-		SendPacket(1,playerid, CefUpdate, "client.setChatStatus(true)");
+		SendPacket(playerid, CefUpdate, "showInterface('Hud')");
+		SendPacket(playerid, CefUpdate, "client.setHudStatus(true)");
+		SendPacket(playerid, CefUpdate, "client.setChatStatus(true)");
 		LoadInventory(playerid);
 		callcmd::alogin(playerid);
 		TogglePlayerSpectating(playerid, false);

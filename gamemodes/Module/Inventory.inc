@@ -511,9 +511,9 @@ stock GetItemSlot(playerid,item) {
     }
     return -1;
 }
-public: OnItemsInterfaceClose(playerid) return SendPacket(1, playerid, CefHide, "InventoryNew");
+public: OnItemsInterfaceClose(playerid) return SendPacket( playerid, CefHide, "InventoryNew");
 public: OnInventoryDisplayChange(playerid) {
-    if(PlayerInterfaces[playerid][IF_INVENTORY]) SendPacket(1, playerid, CefHide, "InventoryNew");
+    if(PlayerInterfaces[playerid][IF_INVENTORY]) SendPacket( playerid, CefHide, "InventoryNew");
     else OpenInventory(playerid,1);
     return 1;
 }
@@ -556,11 +556,11 @@ stock OpenInventory(playerid, open=0)
     strdel(str_1,strlen(str_1)-1,strlen(str_1));
     if(open){
         format(str_1, sizeof str_1, "[%d,[\"%s\",%d,%s,%d,%d,%d,0.00,20.00],[],[%s]]", 1, PN(playerid), playerid, GetPlayerMoneyEx(playerid), pInfo[playerid][P_SKIN], 0, 1, str_1);
-        SendPacket(2, playerid, CefShow, "InventoryNew", str_1);
+        SendPacket( playerid, CefShow, "InventoryNew", str_1);
     }
     else {
         format(str_1,sizeof str_1, "interface('InventoryNew').setItems([%s])",str_1);
-        SendPacket(1,playerid,CefUpdate,str_1);
+        SendPacket(playerid,CefUpdate,str_1);
     }
     return 1;
 }
@@ -752,12 +752,12 @@ CMD:giveitem(playerid,params[])
 //         LoadInventory(playerid);
 //         str_1[0] = EOS;
 //         format(str_1, sizeof str_1, "[0,[\"%s\",%d,%d,%d,0,0,%.2f,25.00],[],[%s]]", PN(playerid), playerid, GetPlayerMoney(playerid), GetPlayerSkin(playerid), pInfo[playerid][P_InvWeight], str_2);
-//         SendPacket(2, playerid, CefShow, "InventoryNew", str_1);
+//         SendPacket( playerid, CefShow, "InventoryNew", str_1);
 //     }
 //     else
 //     {
 //         InterfaceStatus[playerid][iInventory] = 0;
-// 		SendPacket(1,playerid, CefHide, "InventoryNew");
+// 		SendPacket(playerid, CefHide, "InventoryNew");
 //     }
 //     return 1;
 // }
@@ -895,13 +895,13 @@ CMD:giveitem(playerid,params[])
 //                     UpdateDataInt(playerid, "Skin", skin_id);
 //                     SetPlayerSkin(playerid, skin_id);
 //                 }
-//                 SendPacket(1, playerid, CefHide, "InventoryNew");
+//                 SendPacket( playerid, CefHide, "InventoryNew");
 //             }
 //             case 4: {
 //                 GameText(playerid, "Переместите Акссесуар в ячейку для акссесуаров", 2000, 2);
 //                 LoadInventory(playerid);
 //                 format(str_q, sizeof str_q, "interface('InventoryNew').setItems([%s])",str_1);
-//                 SendPacket(1,playerid, CefUpdate, str_q);
+//                 SendPacket(playerid, CefUpdate, str_q);
 //             }
 //         }
 //     }

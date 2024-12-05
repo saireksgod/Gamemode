@@ -20,16 +20,12 @@ public OnGameModeInit()
 {
     mysql = mysql_connect(MySQL_Host, MySQL_User, MySQL_Base, MySQL_Pass);
 	mysql_set_charset("cp1251");
-	switch(mysql_errno())
-	{
-		case 0: print("Подключение к базе данных удалось");
-	    case 1044: return print("Подключение к базе данных не удалось [Указано несуществующее имя пользователя]");
-	    case 1045: return print("Подключение к базе данных не удалось [Указан неправильный пароль]");
-	    case 1049: return print("Подключение к базе данных не удалось [Указана несуществующая база данных]");
-	    case 2003: return print("Подключение к базе данных не удалось [Хостинг с базой данных недоступен]");
-	    case 2005: return print("Подключение к базе данных не удалось [Указан неправильный адрес хостинга]");
-	    default: return printf("Подключение к базе данных не удалось [Неизвестная ошибка. Код ошибки: %d]", mysql_errno());
-	}
+
+	if(mysql_errno() == 0)
+		print("Подключение к базе данных удалось");
+
+	else return printf("Подключение к базе данных не удалось [Неизвестная ошибка. Код ошибки: %d]", mysql_errno());
+
     #if defined SET_OnGameModeInit
         return SET_OnGameModeInit();
     #endif
