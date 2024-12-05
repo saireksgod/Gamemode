@@ -140,14 +140,14 @@ public OnSecondTimer()
 	new hour,minuite,second;
 	gettime(hour,minuite,second);
 
-	if(second == 0) OnMinuteTimer();
+	if(!second) OnMinuteTimer();
 	return 1;
 }
 public OnMinuteTimer()
 {
-	new hour,minuite,second;
-	gettime(hour,minuite,second);
-	if(minuite == 0) {
+	new hour,minuite;
+	gettime(hour,minuite);
+	if(!minuite) {
 		switch(hour) 
 		{
 			case 5: SendRconCommand("gmx");
@@ -212,8 +212,6 @@ public OnPlayerConnect(playerid)
 	PreLoadPlayerAnims(playerid);
 	GetPlayerIp(playerid,pInfo[playerid][P_IP],16);
 	if(GetNumberOfPlayersOnThisIP(pInfo[playerid][P_IP]) > 2) Kick:(playerid);
-	//RemoveObjectForPlayer(playerid);
-	//SCM(playerid, 0xDAB823FF, "Добро пожаловать на "ServerName"!");
 	GameText(playerid, "~y~Загрузка...", 3000, 1);
 	return 1;
 }

@@ -1,9 +1,3 @@
-/*
-	Module: Auth And Register
-	Author: Tema_Kovalev
-	By sosal?
-*/
-
 enum RegisterStruct
 {
 	rSkin,
@@ -44,7 +38,7 @@ public: OnRegistrationCharacter(playerid, const params[])
 	extract params -> new event, sex, skin; else return 1;
     if(GetPlayerStateLogged(playerid) != 8) return Kick:(playerid);
 
-	static gRegistrationSkin[][] =
+	static const gRegistrationSkin[2][12] =
 	{
 		{78,135,137,212,213,230,15327,15353,15354,15355,15524,15525},
 		{89,15345,15352,88,39,38,75,15522, -1, -1, -1, -1}
@@ -74,7 +68,7 @@ public: OnRegistrationCharacter(playerid, const params[])
 public: OnRegistrationBonuses(playerid, const name[])
 {
     if(GetPlayerStateLogged(playerid) != 9) return Kick:(playerid);
-    if(strlen(name) > 0)
+    if(strlen(name))
     {	
 		mysql_format(mysql, str_q, sizeof(str_q), "SELECT id FROM users WHERE Name='%e' LIMIT 1", name);
 		mysql_tquery(mysql, str_q, "CheckReferalName", "i", playerid);
@@ -124,20 +118,16 @@ stock CreatePlayerAccount(playerid)
 
 stock IsValidEMail(const email[])
 {
-	for(new i;i < strlen(email);i ++) if(!ValidEmailChar(email[i])) return 0;
+	for(new i;i < strlen(email);i ++) {
+		switch(email[i])
+		{
+			case 'A'..'Z', 'a'..'z', '0'..'9', '-', '_', '@', '.': continue;
+			default: return 0;
+		}
+	}
 	if(!TextFind(email,"@")) return 0;
   	return 1;
 }
-
-stock ValidEmailChar(mailchar)
-{
-	switch(mailchar)
-	{
-		case 'A'..'Z', 'a'..'z', '0'..'9', '-', '_', '@', '.': return 1;
-	}
-	return 0;
-}
-
 
 public: CheckPlayerAccount(playerid)
 {
@@ -147,6 +137,7 @@ public: CheckPlayerAccount(playerid)
 	new Cache:result = mysql_query(mysql, str_q,true);
 	if(!mysql_errno()) 
 	{
+		SetPlayerTimer(playerid, !"OnPlayerTimer", 1000, -1);
 		TogglePlayerSpectating(playerid, true);
 		if(cache_num_rows())
 		{
@@ -204,7 +195,6 @@ public: CB_GetHardwareIDBanned(playerid)
 	return true;
 }
 //==================================================================================//
-//	AUTHORIZATION
 
 public: OnAuthorizationStart(playerid,const dest[])
 {
@@ -229,7 +219,7 @@ public: OnAuthorizationStart(playerid,const dest[])
 	else SendPacket( playerid, CefUpdate, "interface('Authorization').$refs.auth.setError(\"password\", \"Некорректная длинна пароля\")");
     return 1;
 }
-stock OnAuthorizationCode(playerid,code[])
+public: OnAuthorizationCode(playerid,const code[])
 {
     #pragma unused playerid, code
     if(GetPlayerStateLogged(playerid) != 2) return 0;
