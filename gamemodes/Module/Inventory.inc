@@ -377,17 +377,6 @@ const o = {
     SHOW_INVENTORY_BLACK_PROD: 7
 }
 */
-#define MAX_INV_ITEMS           20
-#define MAX_ACS_ITEMS           10
-
-#define MAX_INV_WIGHT           66
-
-#define SetItem(%0,%1,%2)           g_player_inv[playerid][%0][%1] = %2
-#define GetItem(%0,%1)              g_player_inv[playerid][%0][%1]
-
-#define SetItemAcs(%0,%1)           g_player_acs[playerid][%0][%1] = %2
-#define GetItemAcs(%0,%1)           g_player_acs[playerid][%0][%1]
-
 // //TYPEITEMS:
 // // 0 - ƒ≈Õ‹√»
 // // 1 - — »Õ
@@ -402,6 +391,17 @@ const o = {
 4(UA) = XXXX 6666
 5(Custom) = NY PON
 */
+#define MAX_INV_ITEMS           20
+#define MAX_ACS_ITEMS           10
+
+#define MAX_INV_WIGHT           66
+
+#define SetItem(%0,%1,%2)           g_player_inv[playerid][%0][%1] = %2
+#define GetItem(%0,%1)              g_player_inv[playerid][%0][%1]
+
+#define SetItemAcs(%0,%1)           g_player_acs[playerid][%0][%1] = %2
+#define GetItemAcs(%0,%1)           g_player_acs[playerid][%0][%1]
+
 enum CONTAINERS 
 {
     CONTAINER_ACS = 0,
@@ -447,28 +447,27 @@ stock LoadInventory(playerid)
 public:CB_LoadInventory(playerid,punkt) {
     if(!IsPlayerConnected(playerid)) return 1;
     if(!cache_num_rows()) return 1;
+    new str_ff[12],code[32];
     if(punkt == 1) {
         str_q[0] = EOS;
-        for(new i=1;i<MAX_INV_ITEMS+1;i++)
+        for(new i;i<MAX_INV_ITEMS;i++)
         {
-            new str_ff[12];
-            format(str_ff,sizeof str_ff,"SLOT%d",i);
+            format(str_ff,sizeof str_ff,"SLOT%d",i+1);
             cache_get_field_content(0,str_ff,str_q);
-            new code[32];
-            sscanf(str_q,"p<;>a<d>[5]s[32]a<f>[9]",g_player_inv[playerid][i-1],code,g_player_inv[playerid][i-1][PI_ACSPOS]);
-            format(g_player_inv[playerid][i-1][PI_EXTRANAME],32,code);
+
+            sscanf(str_q,"p<;>a<d>[5]s[32]a<f>[9]",g_player_inv[playerid][i],code,g_player_inv[playerid][i][PI_ACSPOS]);
+            format(g_player_inv[playerid][i][PI_EXTRANAME],32,code);
         }
     }
     if(punkt == 2) {
         str_q[0] = EOS;
-        for(new i=1;i<MAX_ACS_ITEMS+1;i++)
+        for(new i;i<MAX_ACS_ITEMS;i++)
         {
-            new str_ff[12];
-            format(str_ff,sizeof str_ff,"SLOT%d",i);
+            format(str_ff,sizeof str_ff,"SLOT%d",i+1);
             cache_get_field_content(0,str_ff,str_q);
-            new code[32];
-            sscanf(str_q,"p<;>a<d>[5]s[32]a<f>[9]",g_player_acs[playerid][i-1],code,g_player_acs[playerid][i-1][PI_ACSPOS]);
-            format(g_player_acs[playerid][i-1][PI_EXTRANAME],32,code);
+
+            sscanf(str_q,"p<;>a<d>[5]s[32]a<f>[9]",g_player_acs[playerid][i],code,g_player_acs[playerid][i][PI_ACSPOS]);
+            format(g_player_acs[playerid][i][PI_EXTRANAME],32,code);
         }
     }
     return 1;
@@ -486,16 +485,16 @@ stock SavePlayerInventory(playerid,punkt=1) {
         new str_acs[120];
         format(str_tt,sizeof str_tt,"");
         for(new k; k < sizeof InveSoshr; k++)
-            format(str_tt,sizeof str_tt,"%s%d;",str_tt,punkt==1 ? GetItem(i-1,InveSoshr[k][INVLOAD_TYPE]) : GetItemAcs(i-1,InveSoshr[k][INVLOAD_TYPE]));
+            format(str_tt,sizeof str_tt,"%s%d;",str_tt,punkt ? GetItem(i-1,InveSoshr[k][INVLOAD_TYPE]) : GetItemAcs(i-1,InveSoshr[k][INVLOAD_TYPE]));
         format(str_acs,sizeof str_acs,"");
         for(new k; k < 9; k++)
-            format(str_acs,sizeof str_acs,"%s;%f",str_acs,punkt==1 ? GetItem(i-1,PI_ACSPOS)[k] : GetItemAcs(i-1,PI_ACSPOS)[k]);
+            format(str_acs,sizeof str_acs,"%s;%f",str_acs,punkt ? GetItem(i-1,PI_ACSPOS)[k] : GetItemAcs(i-1,PI_ACSPOS)[k]);
         if(punkt == 1) format(str_q,sizeof str_q,"%s SLOT%d='%s%s%s',",str_q,i,str_tt,GetItem(i-1,PI_EXTRANAME), str_acs);
         if(punkt == 0) format(str_q,sizeof str_q,"%s SLOT%d='%s%s%s',",str_q,i,str_tt,GetItemAcs(i-1,PI_EXTRANAME), str_acs);
     }
     strdel(str_q, strlen(str_q)-1,strlen(str_q));
     mysql_format(mysql,str_q,sizeof str_q,"UPDATE items SET%s WHERE uid=%d AND container=%d",str_q,GetPlayerAccountID(playerid),punkt);
-    mysql_query(mysql,str_q,false);
+    mysql_tquery(mysql,str_q,"");
     return 1;
 }
 
@@ -511,9 +510,9 @@ stock GetItemSlot(playerid,item) {
     }
     return -1;
 }
-public: OnItemsInterfaceClose(playerid) return SendPacket( playerid, CefHide, "InventoryNew");
+public: OnItemsInterfaceClose(playerid) return SendPacket(playerid, CefHide, "InventoryNew");
 public: OnInventoryDisplayChange(playerid) {
-    if(PlayerInterfaces[playerid][IF_INVENTORY]) SendPacket( playerid, CefHide, "InventoryNew");
+    if(PlayerInterfaces[playerid][IF_INVENTORY]) SendPacket(playerid, CefHide, "InventoryNew");
     else OpenInventory(playerid,1);
     return 1;
 }
@@ -537,9 +536,9 @@ stock OpenInventory(playerid, open=0)
             case 3: format(str_1,sizeof str_1,"%s[1,%d,%d,%d,\"%s\",0,%d,6.00,0],",str_1,i,GetItem(i,PI_ID),GetItem(i,PI_EXTRATYPE),GetItem(i,PI_EXTRANAME),GetItem(i,PI_COUNT));
             case 4: {
                 if(!( 1 <= GetItem(i,PI_EXTRATYPE) <= 5)) continue;
-                new number[2][32];
+                new number[2][16];
                 if(GetItem(i,PI_EXTRATYPE) != 5) {
-                    sscanf(GetItem(i,PI_EXTRANAME),"p<|>a<s[32]>[2]",number);
+                    sscanf(GetItem(i,PI_EXTRANAME),"p<|>a<s[16]>[2]",number);
                     if(!IsValidNumber(number[0],GetItem(i,PI_EXTRATYPE))) continue;
                     if(!IsValidRegion(number[1],GetItem(i,PI_EXTRATYPE))) continue;
                 }
