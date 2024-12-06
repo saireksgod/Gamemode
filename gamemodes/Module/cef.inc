@@ -116,7 +116,7 @@ enum CefPublicStruct {
 	CP_CALLBACK[36],
     CP_LOAD[MAX_CEF_PARAMS]
 };
-
+// 0 - int, 1 - str
 static const CefPublic[][CefPublicStruct] = {
     {0, -1, "EndedInitializeBrowser", "EndedInitializeBrowser", {-1}},
     {1, -1, "OnDialogResponse", "CC_OnDialogResponse", {0, 0, 0, 1, -1}},
@@ -134,13 +134,12 @@ static const CefPublic[][CefPublicStruct] = {
     {13, -1, "OnInventoryItemTake", "OnInventoryItemTake", {0, 0, 0, -1}},
     {14, -1, "OnInventoryItemGive", "OnInventoryItemGive", {0, 0, 0, -1}},
     {15, -1, "OnInventoryItemSell", "OnInventoryItemSell", {0, 0, -1}},
-    {16, -1, "OnInventoryItemUse", "OnInventoryItemUse", {0, 0, -1}},
-    {17, -1, "AY_OnPlayerEdit", "AY_OnPlayerEdit", {0, 0, -1}},
-    {18, -1, "I_OnPlayerFetchSkateboard", "I_OnPlayerFetchSkateboard", {0, 0, -1}},
-    {19, -1, "Fishing_RemoveFishingLine", "Fishing_RemoveFishingLine", {0, 0, -1}},
-    {20, -1, "OnPlayerClientSideKey", "OnPlayerClientSideKey", {0,-1}},
-    {21, -1, "OnPlayerDeviceLost", "OnPlayerDeviceLost", {-1}},//אפך
-    {22, -1, "OnPlayerDeviceRestore", "OnPlayerDeviceRestore", {-1}}//גûרוכ טח אפך
+    {16, -1, "AY_OnPlayerEdit", "AY_OnPlayerEdit", {0, 0, -1}},
+    {17, -1, "I_OnPlayerFetchSkateboard", "I_OnPlayerFetchSkateboard", {0, 0, -1}},
+    {18, -1, "Fishing_RemoveFishingLine", "Fishing_RemoveFishingLine", {0, 0, -1}},
+    {19, -1, "OnPlayerClientSideKey", "OnPlayerClientSideKey", {0,-1}},
+    {20, -1, "OnPlayerDeviceLost", "OnPlayerDeviceLost", {-1}},//אפך
+    {21, -1, "OnPlayerDeviceRestore", "OnPlayerDeviceRestore", {-1}}//גûרוכ טח אפך
 };
 stock SearchCefPublic(const call[])
 {

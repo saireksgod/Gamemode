@@ -168,11 +168,11 @@ public OnPlayerTimer(playerid)
 public OnGameModeInit()
 {
 	// new t = GetTickCount();
-	// for(new i = 0; i < 100000; i++)
+	// for(new i = 0; i < 1000000; i++)
 	// {
-	// 	IsValidNickName("Oleg_Rudkov1");
+	// 	ClearPlayerInventory(0);
 	// }
-	// printf("%d", GetTickCount() - t);
+	// printf("1: %d", GetTickCount() - t);
 	// new time = gettime();
 	// new year, month, day;
 	// new houra, minute, second;	
