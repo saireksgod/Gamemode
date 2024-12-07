@@ -91,6 +91,7 @@ enum player
 	bool:pAdmLogin,
 	pAdmPass[32+1],
 	pHomeUseSlot,
+	pListItem[15],
 	pHomeSlots
 }
 new pInfo[MAX_PLAYERS][player];
@@ -179,7 +180,6 @@ public OnGameModeInit()
 	// timestamp_to_date(time,year,month,day,houra,minute,second);
 	// printf("%d-%02d-%02d %02d:%02d:%02d",year,month,day,houra,minute,second);
 	new currenttime = GetTickCount();
-	LoadHouse();
 	LimitPlayerMarkerRadius(70.0);
 	ManualVehicleEngineAndLights();
 	EnableStuntBonusForAll(0);
@@ -285,6 +285,8 @@ public OnPlayerUpdate(playerid)
 }
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
+	House_OnDialogResponse(playerid, dialogid, response, listitem);
+	
 	switch(dialogid) {
 		case dAdmPassCreate: {
 			if(!response) return Kick:(playerid);
