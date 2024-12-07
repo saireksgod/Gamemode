@@ -91,6 +91,7 @@ enum player
 	bool:pAdmLogin,
 	pAdmPass[32+1],
 	pHomeUseSlot,
+	pListItem[15],
 	pHomeSlots
 }
 new pInfo[MAX_PLAYERS][player];
@@ -179,7 +180,6 @@ public OnGameModeInit()
 	// timestamp_to_date(time,year,month,day,houra,minute,second);
 	// printf("%d-%02d-%02d %02d:%02d:%02d",year,month,day,houra,minute,second);
 	new currenttime = GetTickCount();
-	LoadHouse();
 	LimitPlayerMarkerRadius(70.0);
 	ManualVehicleEngineAndLights();
 	EnableStuntBonusForAll(0);
@@ -288,6 +288,8 @@ public OnPlayerUpdate(playerid)
 }
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
+	House_OnDialogResponse(playerid, dialogid, response, listitem);
+	
 	switch(dialogid) {
 		case dAdmPassCreate: {
 			if(!response) return Kick:(playerid);
@@ -369,54 +371,6 @@ public:OnPlayerClientSideKey(playerid,const params[]) {
 	return 1;
 }
 // == == == == [ Стоки ] == == == ==
-stock RemoveObjectForPlayer(playerid)
-{
-	RemoveBuildingForPlayer(playerid, 2118, 2252.3301, -1802.4200, 22.3800, 0.25);
-	RemoveBuildingForPlayer(playerid, 2118, 2236.1201, -1802.3800, 22.3800, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 152.6010, 600.4860, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 144.4120, 578.7390, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 150.1590, 648.9010, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 156.4950, 665.2200, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 162.6760, 680.4710, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 168.8510, 696.3920, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 176.5950, 716.2870, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4102, 132.1890, 640.7170, 15.4900, 0.25);
-	RemoveBuildingForPlayer(playerid, 4587, 157.9500, 426.1000, 11.0000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4606, 157.9500, 426.1000, 11.0000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4346, 442.4220, 682.3600, 14.2000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4360, 442.4220, 682.3600, 14.2000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4366, 441.4700, 696.0350, 11.3500, 0.25);
-	RemoveBuildingForPlayer(playerid, 4367, 438.5590, 697.1240, 11.3500, 0.25);
-	RemoveBuildingForPlayer(playerid, 4368, 455.1690, 690.8180, 11.2050, 0.25);
-	RemoveBuildingForPlayer(playerid, 4030, -86.0283, 960.4030, 25.7900, 0.25);
-	RemoveBuildingForPlayer(playerid, 4031, -86.0283, 960.4030, 25.7900, 0.25);
-	RemoveBuildingForPlayer(playerid, 4030, -141.4970, 987.1750, 25.7900, 0.25);
-	RemoveBuildingForPlayer(playerid, 4031, -141.4970, 987.1750, 25.7900, 0.25);
-	RemoveBuildingForPlayer(playerid, 4342, 413.1420, 752.0520, 17.8500, 0.25);
-	RemoveBuildingForPlayer(playerid, 4356, 413.1420, 752.0520, 17.8500, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 134.3870, 607.9220, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 142.3250, 628.6840, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 150.1590, 648.9010, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 156.4950, 665.2200, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 162.6760, 680.4710, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 168.8510, 696.3920, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4100, 176.5950, 716.2870, 16.3000, 0.25);
-	RemoveBuildingForPlayer(playerid, 4442, 362.0260, 812.1090, 12.5400, 0.25);
-	RemoveBuildingForPlayer(playerid, 4447, 362.0260, 812.1090, 12.5400, 0.25);
-	RemoveBuildingForPlayer(playerid, 4443, 133.8530, 641.3940, 12.9200, 0.25);
-	RemoveBuildingForPlayer(playerid, 4431, -102.6940, 954.9450, 12.9900, 0.25);
-	RemoveBuildingForPlayer(playerid, 4432, 135.4660, 652.2210, 12.7900, 0.25);
-	RemoveBuildingForPlayer(playerid, 4432, -116.5360, 955.0590, 12.9900, 0.25);
-	RemoveBuildingForPlayer(playerid, 641, 2137.3494, 1387.6998, 22.6629, 0.25);
-	RemoveBuildingForPlayer(playerid, 641, 2120.6721, 1362.4197, 25.5629, 0.25);
-	RemoveBuildingForPlayer(playerid, 641, 2118.6516, 1371.9425, 25.5629, 0.25);
-	RemoveBuildingForPlayer(playerid, 641, 2130.1104, 1369.4949, 25.3629, 0.25);
-	RemoveBuildingForPlayer(playerid, 641, 2137.8013, 1373.5449, 22.2629, 0.25);
-	RemoveBuildingForPlayer(playerid, 641, 2124.0774, 1378.1780, 25.6629, 0.25);
-	RemoveBuildingForPlayer(playerid, 641, 2128.9607, 1389.7159, 25.4629, 0.25);
-	RemoveBuildingForPlayer(playerid, 641, 2117.1870, 1384.8115, 25.4629, 0.25);
-	RemoveBuildingForPlayer(playerid, 641, 2131.7351, 1380.8224, 24.6629, 0.25);
-}
 stock SetPlayerAdminEx(playerid, lvl)
 {
     mysql_queryf(mysql, "SELECT `admin` FROM `users` WHERE `ID` = '%i' LIMIT 1", true, pInfo[playerid][P_ID]);
