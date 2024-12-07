@@ -533,7 +533,12 @@ stock OpenInventory(playerid, open=0)
     if(!IsPlayerConnected(playerid) || !IsPlayerLogged(playerid)) return 1;
     
     format(str_1,sizeof str_1,"");
-    for(new i; i<MAX_INV_ITEMS;i++)
+    for(new i;i<10;i++)
+    {
+        if(GetItem(playerid,0,i,PI_TYPE) != 2) continue;
+        format(str_1,sizeof str_1,"%s[0,%d,%d,%d,\"\",0,1,2.00,0],",str_1,i,GetItem(playerid,0,i,PI_ID),GetItem(playerid,0,i,PI_EXTRATYPE));
+    }
+    for(new i; i<20;i++)
     {
         switch(GetPlayerItem(playerid,i,PI_TYPE))
         {
@@ -670,12 +675,30 @@ stock RemovePlayerAttachedObjects(playerid)
 	}
     return true;
 }
-
+alias:return_acsses("return_acs");
+CMD:return_acsses(playerid)
+{
+    RemovePlayerAttachedObjects(playerid);
+    for(new slot;slot<20;slot++)
+    {
+        new container = -1;
+        if(GetItem(playerid,0,slot,PI_TYPE) == 2 && GetItem(playerid,0,slot,PI_STATUS) > 2) container = 0;
+        if(GetItem(playerid,1,slot,PI_TYPE) == 2 && GetItem(playerid,1,slot,PI_STATUS) > 2) container = 1;
+        if(container != -1) {
+            new id = GetAcsId(GetItem(playerid,container,slot,PI_ID));
+            if(id == -1) return 1;
+            new index = AcsTypes[id][ACS_INDEX], bonnet = AcsTypes[id][ACS_BONNET];
+            SetPlayerAttachedObject(playerid,index,GetItem(playerid,container,slot,PI_EXTRATYPE),bonnet,GetItem(playerid,container,slot,PI_ACSPOS)[0],GetItem(playerid,container,slot,PI_ACSPOS)[1],GetItem(playerid,container,slot,PI_ACSPOS)[2],GetItem(playerid,container,slot,PI_ACSPOS)[3],GetItem(playerid,container,slot,PI_ACSPOS)[4], GetItem(playerid,container,slot,PI_ACSPOS)[5],GetItem(playerid,container,slot,PI_ACSPOS)[6],GetItem(playerid,container,slot,PI_ACSPOS)[7],GetItem(playerid,container,slot,PI_ACSPOS)[8]);
+        }
+    }
+    return true;
+}
 public: OnInventoryItemMove(playerid, const params[])
 {
     extract params-> new lastContainer, lastSlot, container, slot, count;else return 1;
     if(lastContainer == container && lastSlot == slot) return OpenInventory(playerid);
     if(!(0<=container<=3)) return OpenInventory(playerid);
+
     if(container == 0 && GetItem(playerid,lastContainer,lastSlot,PI_TYPE) != 2) return GameText(playerid, "~r~Только аксессуары!",2000, 1), OpenInventory(playerid);
     else if((GetItem(playerid,container,slot,PI_TYPE) == GetItem(playerid,lastContainer,lastSlot,PI_TYPE)) && GetItem(playerid,container,slot,PI_TYPE) == 3 && GetItem(playerid,container,slot,PI_ID) == GetItem(playerid,lastContainer,lastSlot,PI_ID)) {
         if(GetItem(playerid,lastContainer,lastSlot,PI_COUNT) < count || count < 1) return GameText(playerid, "~r~Неверное количество!",2000, 1), OpenInventory(playerid);
@@ -685,8 +708,8 @@ public: OnInventoryItemMove(playerid, const params[])
     }
     else if(GetItem(playerid,container,slot,PI_TYPE) != -1 || GetItem(playerid,lastContainer,lastSlot,PI_TYPE) == -1) return OpenInventory(playerid);
     else {
-        g_player_inv[playerid][container][slot] = g_player_inv[playerid][container][lastSlot];
-        g_player_inv[playerid][container][lastSlot] = inv_default;
+        g_player_inv[playerid][container][slot] = g_player_inv[playerid][lastContainer][lastSlot];
+        g_player_inv[playerid][lastContainer][lastSlot] = inv_default;
     }
     OpenInventory(playerid);
     return 1;

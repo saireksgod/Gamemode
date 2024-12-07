@@ -111,8 +111,9 @@ stock CreatePlayerAccount(playerid)
     cache_delete(result);
     
 	SendPacket(playerid, CefHide, "Authorization");
-    LoadPlayerData(playerid);
-    
+    LoadInventory(playerid);
+	mysql_format(mysql, str_q, sizeof str_q, "SELECT * FROM users WHERE Name='%s' LIMIT 1", PN(playerid));
+	mysql_tquery(mysql,str_q,"LoadPlayerData", "d", playerid);
 	return 1;
 }
 
@@ -213,7 +214,10 @@ public: OnAuthorizationStart(playerid,const dest[])
             SendPacket(playerid, CefHide, "Authorization");
             SendPacket(playerid, CefShow, "Loading", "[3000]");
 			pInfo[playerid][pWrongPassword]=0;
-            LoadPlayerData(playerid);
+			str_q[0] = EOS;
+			LoadInventory(playerid);
+			mysql_format(mysql, str_q, sizeof str_q, "SELECT * FROM users WHERE Name='%s' LIMIT 1", PN(playerid));
+			mysql_tquery(mysql,str_q,"LoadPlayerData", "d", playerid);
         }
     }
 	else SendPacket( playerid, CefUpdate, "interface('Authorization').$refs.auth.setError(\"password\", \"Некорректная длинна пароля\")");
@@ -226,11 +230,8 @@ public: OnAuthorizationCode(playerid,const code[])
     return 1;
 }
 
-stock LoadPlayerData(playerid)
+public: LoadPlayerData(playerid)
 {
-	str_q[0] = EOS;
-	mysql_format(mysql, str_q, sizeof str_q, "SELECT * FROM users WHERE Name='%s' LIMIT 1", PN(playerid));
-	new Cache:result = mysql_query(mysql, str_q,true);
 	if(cache_num_rows())
 	{
 		IsPlayerLogged(playerid) = true;
@@ -248,16 +249,12 @@ stock LoadPlayerData(playerid)
 		pInfo[playerid][P_FULLNESS] = cache_get_field_content_int(0, "Fullness");
 		pInfo[playerid][pReferal] = cache_get_field_content_int(0, "Referal");
 		cache_get_field_content(0, "AdminPassword", pInfo[playerid][pAdmPass], mysql, 32+1);
-		SendPacket(playerid, CefUpdate, "showInterface('Hud')");
-		SendPacket(playerid, CefUpdate, "client.setHudStatus(true)");
-		SendPacket(playerid, CefUpdate, "client.setChatStatus(true)");
-		LoadInventory(playerid);
 		callcmd::alogin(playerid);
+		callcmd::return_acsses(playerid);
 		TogglePlayerSpectating(playerid, false);
         SetPlayerColor(playerid, 0xFFFFFFFF);
 		SetPlayerSpawn(playerid);
 	}
 	else Kick(playerid);
-	cache_delete(result);
 	return true;
 }
