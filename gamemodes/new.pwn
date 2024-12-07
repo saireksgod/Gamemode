@@ -141,14 +141,14 @@ public OnSecondTimer()
 	new hour,minuite,second;
 	gettime(hour,minuite,second);
 
-	if(second == 0) OnMinuteTimer();
+	if(!second) OnMinuteTimer();
 	return 1;
 }
 public OnMinuteTimer()
 {
-	new hour,minuite,second;
-	gettime(hour,minuite,second);
-	if(minuite == 0) {
+	new hour,minuite;
+	gettime(hour,minuite);
+	if(!minuite) {
 		switch(hour) 
 		{
 			case 5: SendRconCommand("gmx");
@@ -169,11 +169,11 @@ public OnPlayerTimer(playerid)
 public OnGameModeInit()
 {
 	// new t = GetTickCount();
-	// for(new i = 0; i < 100000; i++)
+	// for(new i = 0; i < 1000000; i++)
 	// {
-	// 	IsValidNickName("Oleg_Rudkov1");
+	// 	ClearPlayerInventory(0);
 	// }
-	// printf("%d", GetTickCount() - t);
+	// printf("1: %d", GetTickCount() - t);
 	// new time = gettime();
 	// new year, month, day;
 	// new houra, minute, second;	
