@@ -592,7 +592,6 @@ public:OnInventoryItemUse(playerid, const args[])
             if(id == -1) return 1;
             new index = AcsTypes[id][ACS_INDEX], bonnet = AcsTypes[id][ACS_BONNET];
             if(IsPlayerAttachedObjectSlotUsed(playerid,index)) {
-                SCM(playerid,-1,!"Снялся");
                 RemovePlayerAttachedObject(playerid,index);
                 for(new i;i<MAX_INV_ITEMS;i++)
                 {
@@ -604,7 +603,8 @@ public:OnInventoryItemUse(playerid, const args[])
             for(new i;i<9;i++)
             {
                 if(GetItem(playerid,container,slot,PI_ACSPOS)[i] == 0.0) continue;
-                status = 1;break;
+                status = 1;
+                break;
             }
             if(status)
                 SetPlayerAttachedObject(playerid,index,GetItem(playerid,container,slot,PI_EXTRATYPE),bonnet,GetItem(playerid,container,slot,PI_ACSPOS)[0],GetItem(playerid,container,slot,PI_ACSPOS)[1],GetItem(playerid,container,slot,PI_ACSPOS)[2],GetItem(playerid,container,slot,PI_ACSPOS)[3],GetItem(playerid,container,slot,PI_ACSPOS)[4],
@@ -613,17 +613,25 @@ public:OnInventoryItemUse(playerid, const args[])
                 SetPlayerAttachedObject(playerid,index,GetItem(playerid,container,slot,PI_EXTRATYPE),bonnet);
                 EditAttachedObject(playerid,index);
             }
-            SCM(playerid,-1,!"Оделся");
+            SCM(playerid,0xE2DF16FF,"Вы успешно надели аксессуар!");
             GetItem(playerid,container,slot,PI_STATUS) = index;
         }
         else {
             RemovePlayerAttachedObject(playerid,GetItem(playerid,container,slot,PI_STATUS));
             GetItem(playerid,container,slot,PI_STATUS) = 0;
-            SCM(playerid,0xC4A000FF,"Вы успешно сняли аксуссуар!");
+            SCM(playerid,0xE2DF16FF,"Вы успешно сняли аксессуар!");
         }
         SendPacket(playerid, CefHide,"InventoryNew");
     }
     else SCM(playerid,-1,"Ноу");
+    return 1;
+}
+public:AY_OnPlayerEdit(playerid,const args[]) {
+    extract args-> new container,slot;else return 1;
+    if(container != 0 || container != 1) return 1;
+    if(GetItem(playerid,container,slot,PI_TYPE) != 2) return 1;
+    if(!GetItem(playerid,container,slot,PI_STATUS)) return GameText(playerid,"~r~Наденьте аксессуар",2000,1);
+    EditAttachedObject(playerid,GetItem(playerid,container,slot,PI_STATUS));
     return 1;
 }
 CMD:inv(playerid)
@@ -643,7 +651,7 @@ CMD:inv1(playerid)
 stock GetAcsId(acsid) {
     for(new i;i<sizeof AcsTypes;i++) if(acsid == AcsTypes[i][ACS_TYPE]) return i;
     return -1;
-}//SetPlayerAttachedObject
+}
 stock PlayerGetItem(playerid,itemid,container=1) {
     for(new i;i<MAX_INV_ITEMS;i++)
     {

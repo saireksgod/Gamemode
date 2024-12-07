@@ -368,9 +368,31 @@ public: OnPlayerStatsAndWeaponsUpdate(playerid)
 	return 1;
 }
 // == == == == [ Паблики ] == == == ==
-public:OnPlayerClientSideKey(playerid,const params[]) {
-	extract params -> new key;else return 1;
-	return 1;
+public OnPlayerEditAttachedObject(playerid, response, index, modelid, boneid, Float:fOffsetX, Float:fOffsetY, Float:fOffsetZ, Float:fRotX, Float:fRotY, Float:fRotZ, Float:fScaleX, Float:fScaleY, Float:fScaleZ)
+{
+	if(!response) return true;
+	if(2<index<10) {
+		new slot=-1,container=-1;
+		for(new i;i<MAX_INV_ITEMS;i++)
+		{
+			if(GetItem(playerid,0,i,PI_STATUS) != index && GetItem(playerid,1,i,PI_STATUS) != index) continue;
+			slot = i;
+			container = GetItem(playerid,1,i,PI_STATUS) == index ? 1 : 0;
+		}
+		if(container == -1 || slot == -1) return true;
+		GetItem(playerid,container,slot,PI_ACSPOS)[0] = fOffsetX;
+		GetItem(playerid,container,slot,PI_ACSPOS)[1] = fOffsetY;
+		GetItem(playerid,container,slot,PI_ACSPOS)[2] = fOffsetZ;
+
+		GetItem(playerid,container,slot,PI_ACSPOS)[3] = fRotX;
+		GetItem(playerid,container,slot,PI_ACSPOS)[4] = fRotY;
+		GetItem(playerid,container,slot,PI_ACSPOS)[5] = fRotZ;
+
+		GetItem(playerid,container,slot,PI_ACSPOS)[6] = fScaleX;
+		GetItem(playerid,container,slot,PI_ACSPOS)[7] = fScaleY;
+		GetItem(playerid,container,slot,PI_ACSPOS)[8] = fScaleZ;
+	}
+	return true;
 }
 // == == == == [ Стоки ] == == == ==
 stock SetPlayerAdminEx(playerid, lvl)
@@ -518,28 +540,6 @@ CMD:vget(playerid, params[])
 
 	return 1;
 }
-/*cmd:veh(playerid, params[])
-{
-	if(pInfo[playerid][P_ADMIN] < 4) return SCM(playerid, -1, NO_DOSTUP_TEXT);
-	if(!pInfo[playerid][pAdmLogin]) return SCM(playerid, COLOR_CHAT, AloginTxt);
-	extract params -> new modelid, color_1, color_2, type; else return SCM(playerid, 0xFF9300FF, "[Используйте] {ffffff}/veh [id модели] [цвет 1] [цвет 2] [Тип] (0 - заспавнить рядом, 1 - сразу сесть)");
-	//if(!(400 <= modelid <= 614) && (!(15065 <= modelid <= 15299) && (!(15600 <= modelid <= 15659) && (!(699 <= modelid <= 699) && (!(793 <= modelid <= 799) && (!(907 <= modelid <= 909) 
-	//&& (!(965 <= modelid <= 965) && (!(999 <= modelid <= 999) && (!(1326 <= modelid <= 1326))))))))))  
-	//return SCM(playerid, 0xFF9300FF, "[Ошибка] {ffffff}Вы указали неверный id авто. Доступные авто: 400-614, 699, 793-799, 907-909, 965, 999, 1326, 15065-15300, 15600-15660");
-	new Float: x,
-		Float: y,
-		Float: z,
-		Float: a;
-	GetPlayerPos(playerid, x, y, z);
-	GetPlayerFacingAngle(playerid, a);
-
-	new vehicleid = CreateVehicle(modelid, x, y, z, a, color_1, color_2,-1);
-	if(type == 1) PutPlayerInVehicle(playerid, vehicleid, 0);
-	str_1[0] = EOS;
-	f(str_1, sizeof str_1, "[A] Администратор %s[%d] Заспавнил Авто: %d", PN(playerid), playerid, modelid);
-	SendMessageToAdmins(0xafafafff, str_1);
-	return 1;
-}*/
 cmd:hp(playerid, params[])
 {
 	if(!CheckAdmin(playerid,3)) return 0;
