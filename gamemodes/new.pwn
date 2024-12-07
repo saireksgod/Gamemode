@@ -219,7 +219,10 @@ public OnPlayerDisconnect(playerid, reason)
 {
 	if(IsValidDynamicObject(pInfo[playerid][pRegisterObj])) DestroyDynamicObject(pInfo[playerid][pRegisterObj]);
 	if( 7 <= GetPlayerStateLogged(playerid) <= 9)for(new i; i < 7; i++) if(IsValidActor(pInfo[playerid][pRegActor][i])) DestroyActor(pInfo[playerid][pRegActor][i]);
-	SavePlayerAcc(playerid);
+	if(IsPlayerLogged(playerid))
+	{
+		SavePlayerAcc(playerid);
+	}
 	return 1;
 }
 public OnPlayerSpawn(playerid)

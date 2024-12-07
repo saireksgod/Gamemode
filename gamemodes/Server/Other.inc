@@ -28,6 +28,7 @@
 #define mysql_queryf(%0,%1,%2,%3) 				str_q[0] = EOS, mysql_format(%0, str_q, sizeof(str_q), %1, %3) && mysql_query(%0, str_q, %2)
 #define RandomEx(%1,%2) 						(random(%2-%1)+%1)
 #define Kick:(%0) FixKick(%0)
+#define strdellast(%0)							strdel(%0, strlen(%0)-1,strlen(%0))
 // == == == == [ Admin ] == == == ==
 new const NO_DOSTUP_TEXT[]   =       		"{ff9300}[Ошибка]{ffffff} У вас нет доступа к этой команде!";
 new const AloginTxt[] =						"{ff9300}[Ошибка]{ffffff} Вы не авторизированы, используйте /alogin";
@@ -57,7 +58,7 @@ forward OnPlayerTimer(playerid);
 // == == == == [ Переменные ] == == == ==
 new str_1[4096],
 	str_2[4096],
-	str_q[2000];
+	str_q[2512];
 stock CheckAdmin(playerid, level=1, CheckAutorizaction=1)
 {
 	if GetPlayerAdminEx(playerid) < level *then 
