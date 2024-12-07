@@ -28,7 +28,25 @@ enum E_HOUSE_STRUCT
     Float:H_ENTER_POS[4]
 };
 
+enum E_IMPROVEMENTS_STRUCT
+{
+    E_IMPROVEMENTS_NAME[24],
+    E_IMPROVEMENTS_PRICE
+};
+
 // --------------------------------------------------------------------
+
+static gHouseImprovemets[][E_IMPROVEMENTS_STRUCT] =
+{
+    {"кровать", 14_500},
+    {"совместное проживание", 60_000},
+    {"оформление субсидии", 100_000},
+    {"шкаф для вещей", 100_000},
+    {"холодильник", 50_000},
+    {"стиральная машина", 120_000},
+    {"домашняя аптечка", 135_000},
+    {"гардероб.", 500_000}
+};
 
 static gHouseStruct[][E_HOUSE_STRUCT] = 
 {
@@ -48,18 +66,14 @@ static gHouseData[MAX_HOUSE][E_HOUSE_DATA];
 // --------------------------------------------------------------------
 CMD:house(playerid)
 {
-    str_q[0] = EOS; 
-    static gHouseId = 0;
-    for(new HouseID; HouseID < MAX_HOUSE; HouseID++)
-    {
-        if(gHouseData[HouseID][H_OWNER_ID] == GetPlayerAccountID(playerid))
-        {
-            format(str_q, sizeof(str_q), "%s{FFFFFF}-Дом: %d\n", str_q, HouseID);
-            pInfo[playerid][pListItem][gHouseId] = HouseID;
-            gHouseId++;
-        }
-    }
-    ShowDialog(playerid, dIDHouse, DIALOG_STYLE_LIST, "{FFCD00}Выберите дом", str_q, "Выбрать", "Отмена");
+    ShowPlayerHouse(playerid, dIDHouse);
+    return true;
+}
+
+CMD:sellhome(playerid)
+{
+    ShowPlayerHouse(playerid, dIDSellHouse);
+    return true;
 }
 // --------------------------------------------------------------------
 public:LoadHouseData()
@@ -88,18 +102,100 @@ public:LoadHouseData()
     return true;
 }
 // --------------------------------------------------------------------
-stock House_OnDialogResponse(playerid, dialogid, response, listitem)
+public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
     str_q[0] = EOS;
     str_1[0] = EOS;
 
+    new HouseID = pInfo[playerid][pListItem][0];
     switch(dialogid)
     {
+        case dHouseParams:
+        {
+            if(!response) return true;
+            switch(listitem)
+            {
+                case 0:
+                {
+                    gHouseData[HouseID][H_LOCK_STATUS] = !gHouseData[HouseID][H_LOCK_STATUS];
+                    SCM(playerid, -1, gHouseData[HouseID][H_LOCK_STATUS] ? "{FF6600}Дом закрыт" : "{66CC00}Дом открыт");
+                }
+                case 1:
+                {
+                    for(new idx; idx < sizeof(gHouseImprovemets); idx++)
+                    {
+                        format
+                        (
+                            str_q, sizeof(str_q), "%s{bd424d}%d уровень:<t>%s<t>%s", 
+                            str_q, idx+1, gHouseImprovemets[idx][E_IMPROVEMENTS_NAME],
+                            gHouseData[HouseID][H_IMPROVEMENTS] < idx ? ("{8fce00}Куплено") : ((str_d("%d", gHouseImprovemets[idx][E_IMPROVEMENTS_PRICE])))
+                        );
+                    }
+                    ShowDialog(playerid, dHouseImprovements, DIALOG_STYLE_LIST, "Информация о доме", str_q, "Изменить", "Отмена");
+                }
+            }
+        }
+        case dHouseImprovements:
+        {
+            if(!response) return true;
+            if(GetPlayerData(playerid, P_MONEY) < gHouseImprovemets[listitem][E_IMPROVEMENTS_PRICE])
+                return SCM(playerid, 0xCECECEFF, (str_d("Для покупки %d уровня улучшений необходимо %d рублей", listitem + 1, gHouseImprovemets[listitem][E_IMPROVEMENTS_PRICE])));
+
+            if(gHouseData[HouseID][H_IMPROVEMENTS] == listitem || gHouseData[HouseID][H_IMPROVEMENTS] > listitem)
+                return SCM(playerid, 0x999999FF, !"Вы уже купили этот уровень улучшений");
+
+            if(gHouseData[HouseID][H_IMPROVEMENTS] < listitem)
+                return SCM(playerid, 0xCECECEFF, !"Этот уровень улучшений пока недоступен");
+
+            gHouseData[HouseID][H_IMPROVEMENTS] ++ ;
+            GiveMoney(playerid, gHouseImprovemets[listitem][E_IMPROVEMENTS_PRICE]);
+
+			SCM(playerid, 0x3399FFFF, (str_d("Вы улучшили свой дом до {FFCD00}%d {3399FF}уровня", listitem)));
+			SCM(playerid, 0x3399FFFF, (str_d("Вы успешно приобрели {FFCD00}%s", gHouseImprovemets[listitem][E_IMPROVEMENTS_NAME])));
+        }
+        case dIDSellHouse:
+        {
+            if(!response) return true;
+            ShowDialog
+            (
+                playerid, dIDSellHome, DIALOG_STYLE_MSGBOX, "{FFD83D}Продажа дома",
+                "{FFFFFF}Вы уверены что хотите продать свой дом государству?\n\n"\
+                "Вам будет возвращено ее стоимость за вычитом 40%\n"\
+                "Также будет возвращено 60% от стоимости купленных улучшений\n\n"\
+                "Если Вы хотите продать дом другому игроку,\n"\
+                "используйте команду /sellmyhome", "Да", "Нет"
+            );
+            pInfo[playerid][pListItem][0] = pInfo[playerid][pListItem][listitem];
+        }
+        case dIDSellHome:
+        {
+            if(!response) return true;
+            gHouseData[HouseID][H_OWNER_ID] = 0;
+            format(gHouseData[HouseID][H_OWNER_NAME], MAX_PLAYER_NAME, "Государство");
+
+            gHouseData[HouseID][H_LOCK_STATUS] = 0;
+            gHouseData[HouseID][H_IMPROVEMENTS] = 0;
+
+            House_IsValidDynamicPickup(HouseID);
+            GiveMoney(playerid, gHouseData[HouseID][H_PRICE]/2);
+        }
+        case dHouseMenu:
+        {
+            if(!response) return true;
+
+            ShowDialog
+            (
+                playerid, dHouseParams, DIALOG_STYLE_LIST, "Информация о доме",
+                "1. {669966}Открыть {FFFFFF}или {CC3333}закрыть {FFFFFF}дом\n2. Улучшить дом\n3. Отметить дом на GPS\n\
+                4. Отметить транспорт на GPS\n5. Доставить транспорт к дому{FF6600}(4000 руб)\n6. Список арендаторов", "Изменить", "Отмена"
+            );
+        }
         case dIDHouse:
         {
             if(!response) return true;
-            new HouseID = pInfo[playerid][pListItem][listitem];
-            new gHouseType = gHouseData[HouseID][H_TYPE];
+            new idx = pInfo[playerid][pListItem][listitem];
+            new gHouseType = gHouseData[idx][H_TYPE];
+
             format
             (
                 str_q, sizeof(str_q), 
@@ -110,16 +206,31 @@ stock House_OnDialogResponse(playerid, dialogid, response, listitem)
                 "{FFFFFF}Модель домашнего авто:<t><t>{FF3333}Нет\n{FFFFFF}Квартплата:<t><t><t><t>%d руб в день\n"\
                 "{FFFFFF}Тип квартплаты:<t><t><t>%s\n{FFFFFF}Статус:<t><t><t><t><t>%s\n\n"\
                 "{669966}Для открытия панели управления вашим домом\nнажмите кнопку Изменить",
-                gHouseStruct[gHouseType][H_NAME], HouseID, gHouseData[HouseID][H_PRICE], 
-                gHouseData[HouseID][H_RENT_DATA], gHouseStruct[gHouseType][H_ROOMS], gHouseData[HouseID][H_IMPROVEMENTS], 
-                gHouseData[HouseID][H_RENT_PRICE], gHouseData[HouseID][H_IMPROVEMENTS] >= 3 ? "Уменьшеная" : "Обычная",
-                gHouseData[HouseID][H_LOCK_STATUS] ? ("{00FF0D}Дом открыт") : ("{FF0000}Дом закрыт")
+                gHouseStruct[gHouseType][H_NAME], idx, gHouseData[idx][H_PRICE], 
+                gHouseData[idx][H_RENT_DATA], gHouseStruct[gHouseType][H_ROOMS], gHouseData[idx][H_IMPROVEMENTS], 
+                gHouseData[idx][H_RENT_PRICE], gHouseData[idx][H_IMPROVEMENTS] >= 3 ? "Уменьшеная" : "Обычная",
+                gHouseData[idx][H_LOCK_STATUS] ? ("{00FF0D}Дом открыт") : ("{FF0000}Дом закрыт")
             );
+
+            pInfo[playerid][pListItem][0] = idx;
             ShowDialog(playerid, dHouseMenu, DIALOG_STYLE_LIST, "Информация о доме", str_q, "Изменить", "Отмена");
         }
     }
-    return true;
+    #if defined House_OnDialogResponse
+        return House_OnDialogResponse(playerid,dialogid, response, listitem, inputtext);
+    #endif
 }
+#if defined _ALS_OnDialogResponse
+    #undef OnDialogResponse
+#else
+    #define _ALS_OnDialogResponse
+#endif
+#define OnDialogResponse House_OnDialogResponse
+#if defined House_OnDialogResponse
+	forward House_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]);
+#endif
+
+
 stock House_IsValidDynamicPickup(HouseID)
 {
     if(IsValidDynamicPickup(gHouseData[HouseID][H_ENTER_PICKUP]))
@@ -139,4 +250,19 @@ stock House_IsValidDynamicPickup(HouseID)
     return true;
 }
 
+stock ShowPlayerHouse(playerid, dialogid)
+{
+    str_q[0] = EOS; 
+    static gHouseId = 0;
+    for(new HouseID; HouseID < MAX_HOUSE; HouseID++)
+    {
+        if(gHouseData[HouseID][H_OWNER_ID] == GetPlayerAccountID(playerid))
+        {
+            format(str_q, sizeof(str_q), "%s{FFFFFF}-Дом: %d\n", str_q, HouseID);
+            pInfo[playerid][pListItem][gHouseId] = HouseID;
+            gHouseId++;
+        }
+    }
+    ShowDialog(playerid, dialogid, DIALOG_STYLE_LIST, "{FFCD00}Выберите дом", str_q, "Выбрать", "Отмена");
+}
 // --------------------------------------------------------------------

@@ -122,7 +122,11 @@ enum dialogs
 	dAdmLogin,
 	dHouse,
     dIDHouse,
-    dHouseMenu
+    dHouseMenu,
+	dHouseParams,
+	dIDSellHome,
+	dIDSellHouse,
+	dHouseImprovements
 }
 // == == == == [ Паблики ] == == == ==
 public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
@@ -288,8 +292,6 @@ public OnPlayerUpdate(playerid)
 }
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
-	House_OnDialogResponse(playerid, dialogid, response, listitem);
-	
 	switch(dialogid) {
 		case dAdmPassCreate: {
 			if(!response) return Kick:(playerid);
@@ -409,14 +411,15 @@ stock GiveExp(playerid, exp)
 stock GiveMoney(playerid, money)
 {
 	str_1[0] = EOS;
+	
 	format(str_1,sizeof str_1,"%d",money);
 	format(pInfo[playerid][P_MONEY], 22, "%s", EditCountSInteger(playerid, GetPlayerMoneyEx(playerid), str_1));	
-	UpdateDataStr(playerid, "money", pInfo[playerid][P_MONEY]);
-	f(str_1, sizeof str_1, "%s%s рублей", money < 0 ? ("~r~-") : ("~g~+"), formatInt(money));
-	GameText(playerid, str_1, 3000, 2);
 
-	format(str_1, sizeof str_1, "window.interface('Hud').info.money = %s", GetPlayerMoneyEx(playerid));
-	SendPacket( playerid, CefUpdate, str_1);
+	UpdateDataStr(playerid, "money", pInfo[playerid][P_MONEY]);
+
+	GameText(playerid, (str_d("%s%s рублей", money < 0 ? ("~r~-") : ("~g~+"), formatInt(money))), 3000, 2);
+	SendPacket( playerid, CefUpdate, (str_d("window.interface('Hud').info.money = %s", GetPlayerMoneyEx(playerid))));
+	
 	return 1;
 }
 stock Clear(playerid)

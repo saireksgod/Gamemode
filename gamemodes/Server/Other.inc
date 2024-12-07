@@ -59,6 +59,11 @@ forward OnPlayerTimer(playerid);
 new str_1[4096],
 	str_2[4096],
 	str_q[2512];
+
+#if !defined str_d
+    #define str_d(%0,%1) str_2[0]=EOS, format(str_2, sizeof(str_2), %0, %1), str_2
+#endif
+
 stock CheckAdmin(playerid, level=1, CheckAutorizaction=1)
 {
 	if GetPlayerAdminEx(playerid) < level *then 
@@ -86,14 +91,14 @@ stock formatInt(number)
 }
 #define MAX_MONEY_SYMBOLS	23
 
-new player_int_count_1[MAX_PLAYERS][MAX_MONEY_SYMBOLS];
-new player_int_count_2[MAX_PLAYERS][MAX_MONEY_SYMBOLS];
-new player_length_count_1[MAX_PLAYERS];
-new player_length_count_2[MAX_PLAYERS];
+static player_int_count_1[MAX_PLAYERS][MAX_MONEY_SYMBOLS];
+static player_int_count_2[MAX_PLAYERS][MAX_MONEY_SYMBOLS];
+static player_length_count_1[MAX_PLAYERS];
+static player_length_count_2[MAX_PLAYERS];
 
 stock EditCountSInteger(playerid, count_1[], count_2[])
 {
-	new fmt_text[MAX_MONEY_SYMBOLS];
+	static fmt_text[MAX_MONEY_SYMBOLS];
 	if(strlen(count_1) > 0 && strlen(count_1) < 20 && strlen(count_2) < 20)
 	{
 		new status = 1;
@@ -185,11 +190,11 @@ stock EditCountSInteger(playerid, count_1[], count_2[])
 }
 stock SettingsCountSString(playerid)
 {
-	new integer_count[MAX_MONEY_SYMBOLS];
+	static integer_count[MAX_MONEY_SYMBOLS];
 	for(new i; i < player_length_count_1[playerid]; i ++)
 	{
 		new count_id = player_length_count_1[playerid] - 1;
-		new query[MAX_MONEY_SYMBOLS];
+		static query[MAX_MONEY_SYMBOLS];
 		format(query, sizeof query, "%d", player_int_count_1[playerid][count_id - i]);
 		strcat(integer_count, query);
 	}
@@ -202,7 +207,7 @@ stock SettingsCountSInteger(playerid, count_1[], count_2[])
 		player_int_count_1[playerid][i] = 0;
 		player_int_count_2[playerid][i] = 0;
 	}
-	new format_count[MAX_MONEY_SYMBOLS];
+	static format_count[MAX_MONEY_SYMBOLS];
 	player_length_count_1[playerid] = strlen(count_1);
 	for(new i; i < player_length_count_1[playerid]; i ++)
 	{
@@ -243,7 +248,7 @@ stock GetCountSInteger(playerid)
 
 stock SetILPlayerInt(playerid, const count_1[], count_2)
 {
-	new query[MAX_MONEY_SYMBOLS];
+	static query[MAX_MONEY_SYMBOLS];
 
 	format(query, sizeof query, "%d", count_2);
 	format(query, sizeof query, "%s", EditCountSInteger(playerid, count_1, query));
@@ -251,7 +256,7 @@ stock SetILPlayerInt(playerid, const count_1[], count_2)
 }
 stock SetILPlayerStr(playerid, const count_1[], const count_2[])
 {
-	new query[MAX_MONEY_SYMBOLS];
+	static query[MAX_MONEY_SYMBOLS];
 
 	format(query, sizeof query, "%s", EditCountSInteger(playerid, count_1, count_2));
 	return query;
@@ -259,7 +264,7 @@ stock SetILPlayerStr(playerid, const count_1[], const count_2[])
 
 stock GetILPlayerInt(const count_1[], count_2)
 {
-	new query[MAX_MONEY_SYMBOLS];
+	static query[MAX_MONEY_SYMBOLS];
 	format(query, sizeof query, "%d", count_2);
 	if(IsILStringStatus(count_1, query)) return 1;
 	else return 0;
@@ -271,9 +276,9 @@ stock GetILPlayerStr(const count_1[], const count_2[])
 }
 stock IsILStringStatus(const count_1[], const count_2[])
 {
-	new format_count[MAX_MONEY_SYMBOLS];
-	new int_count_1[MAX_MONEY_SYMBOLS];
-	new int_count_2[MAX_MONEY_SYMBOLS];
+	static format_count[MAX_MONEY_SYMBOLS];
+	static int_count_1[MAX_MONEY_SYMBOLS];
+	static int_count_2[MAX_MONEY_SYMBOLS];
 	new length_count_1 = strlen(count_1);
 	new length_count_2 = strlen(count_2);
 
