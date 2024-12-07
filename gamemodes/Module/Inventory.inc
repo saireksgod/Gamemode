@@ -431,12 +431,6 @@ const o = {
 
 #define GetItem(%0,%1,%2,%3)                             g_player_inv[%0][%1][%2][%3]
 
-enum CONTAINERS 
-{
-    CONTAINER_ACS = 0,
-    CONTAINER_DEFAULT = 1,
-    CONTAINER_BAG = 2
-}
 enum INV_ITEMS_STRUCT {
     PI_TYPE,
     PI_ID,
@@ -578,8 +572,9 @@ stock OpenInventory(playerid, open=0)
 }
 public:OnInventoryItemUse(playerid, const args[])
 {
+    printf("%s",args);
     extract args-> new container,slot;else return 1;
-    if(GetItem(playerid,container,slot,PI_TYPE) == -1 || GetItem(playerid,container,slot,PI_TYPE) == 0) return OpenInventory(playerid);
+    if(GetItem(playerid,container,slot,PI_TYPE) <= 0) return OpenInventory(playerid);
 
     if(GetItem(playerid,container,slot,PI_TYPE) == 3) {
         switch(GetItem(playerid,container,slot,PI_ID))
@@ -592,11 +587,41 @@ public:OnInventoryItemUse(playerid, const args[])
     }
     else if(GetItem(playerid,container,slot,PI_TYPE) == 2)
     {
-        str_1[0] = EOS;
-        new id = GetAcsId(GetItem(playerid,container,slot,PI_ID));
-        if(id != -1) format(str_1,sizeof str_1,"Имя: %s, тип: %d, модель: %d, индекс: %d, кость: %d",AcsTypes[id][ACS_NAME],GetItem(playerid,container,slot,PI_ID),GetItem(playerid,container,slot,PI_EXTRATYPE),AcsTypes[id][ACS_INDEX],AcsTypes[id][ACS_BONNET]);
-        else format(str_1,sizeof str_1,"не");
-        SCM(playerid,-1,str_1);
+        if(!GetItem(playerid,container,slot,PI_STATUS)) {
+            new id = GetAcsId(GetItem(playerid,container,slot,PI_ID));
+            if(id == -1) return 1;
+            new index = AcsTypes[id][ACS_INDEX], bonnet = AcsTypes[id][ACS_BONNET];
+            if(IsPlayerAttachedObjectSlotUsed(playerid,index)) {
+                SCM(playerid,-1,!"Снялся");
+                RemovePlayerAttachedObject(playerid,index);
+                for(new i;i<MAX_INV_ITEMS;i++)
+                {
+                    if(GetItem(playerid,0,i,PI_STATUS) == index) GetItem(playerid,0,i,PI_STATUS) = 0;
+                    if(GetItem(playerid,1,i,PI_STATUS) == index) GetItem(playerid,1,i,PI_STATUS) = 0;
+                }
+            }
+            new status = 0;
+            for(new i;i<9;i++)
+            {
+                if(GetItem(playerid,container,slot,PI_ACSPOS)[i] == 0.0) continue;
+                status = 1;break;
+            }
+            if(status)
+                SetPlayerAttachedObject(playerid,index,GetItem(playerid,container,slot,PI_EXTRATYPE),bonnet,GetItem(playerid,container,slot,PI_ACSPOS)[0],GetItem(playerid,container,slot,PI_ACSPOS)[1],GetItem(playerid,container,slot,PI_ACSPOS)[2],GetItem(playerid,container,slot,PI_ACSPOS)[3],GetItem(playerid,container,slot,PI_ACSPOS)[4],
+                GetItem(playerid,container,slot,PI_ACSPOS)[5],GetItem(playerid,container,slot,PI_ACSPOS)[6],GetItem(playerid,container,slot,PI_ACSPOS)[7],GetItem(playerid,container,slot,PI_ACSPOS)[8]);
+            else {
+                SetPlayerAttachedObject(playerid,index,GetItem(playerid,container,slot,PI_EXTRATYPE),bonnet);
+                EditAttachedObject(playerid,index);
+            }
+            SCM(playerid,-1,!"Оделся");
+            GetItem(playerid,container,slot,PI_STATUS) = index;
+        }
+        else {
+            RemovePlayerAttachedObject(playerid,GetItem(playerid,container,slot,PI_STATUS));
+            GetItem(playerid,container,slot,PI_STATUS) = 0;
+            SCM(playerid,0xC4A000FF,"Вы успешно сняли аксуссуар!");
+        }
+        SendPacket(playerid, CefHide,"InventoryNew");
     }
     else SCM(playerid,-1,"Ноу");
     return 1;
@@ -662,6 +687,7 @@ stock GiveItem(playerid,item,count,extra=0,const extraname[] = "None")
 {   
     new id = GetPlayerItemSlot(playerid,item);
     if(id == -1) {
+        if(count >= 1) return 0;
         id = GetFreeSlot(playerid);
         if(id != -1) {
             SetPlayerItem(playerid,id,PI_TYPE,3);
@@ -676,17 +702,29 @@ stock GiveItem(playerid,item,count,extra=0,const extraname[] = "None")
         }
     }
     else {
-        if(count <= 0) return 1;
         GetPlayerItem(playerid,id,PI_COUNT) += count;
         if(GetPlayerItem(playerid,id,PI_COUNT) <= 0) g_player_inv[playerid][1][id] = inv_default;
     }
     return true;
 }
-CMD:giveacs(playerid,params[])
+stock GiveAcs(playerid,acsid,modelid) {
+    new id = GetAcsId(acsid);
+    new slot = GetFreeSlot(playerid);
+    if(id == -1 || slot == -1) return 0;
+    SetPlayerItem(playerid,slot,PI_TYPE,2);
+    SetPlayerItem(playerid,slot,PI_ID,acsid);
+    SetPlayerItem(playerid,slot,PI_EXTRATYPE,modelid);
+    return true;
+}
+CMD:giveacs(playerid,const params[])
 {
     if(!CheckAdmin(playerid,6)) return 0;
-    extract params-> new acstype,acsmodel;else return SCM(playerid,COLOR_CHAT,!"Используйте: /giveacs [тип аксессуара] [id аксессура]");
-    // if(GetBonnetIndex(acstype) == -1) return Dialog(playerid,pInvalid,MSGBOX,!"Неправильная модель аксессуара", "{CECECE}Модели аксессуаров:\n\n{FFFFFF}")
+    extract params-> new to_player,acstype,acsmodel;else return SCM(playerid,COLOR_CHAT,!"Используйте: /giveacs [id игрока] [тип аксессуара] [id аксессура]");
+    if(!IsPlayerConnected(playerid) || !IsPlayerLogged(playerid)) return SCM(playerid,COLOR_CHAT,!"Такого игрока нет");
+    if(!GiveAcs(playerid,acstype,acsmodel)) return SCM(playerid,COLOR_CHAT,!"У игрока нету места в инвентаре!");
+    str_1[0] = EOS;
+    format(str_1,sizeof str_1,"[A] %s[%d] выдал аксессуар %s[%d]",GetPlayerNameEx(playerid),playerid,GetPlayerNameEx(to_player),to_player);
+    SCM(playerid,-1,str_1);
     return true;
 }
 CMD:giveitem(playerid,params[]) 
