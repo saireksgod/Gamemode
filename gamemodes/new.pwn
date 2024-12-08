@@ -227,6 +227,7 @@ public OnPlayerDisconnect(playerid, reason)
 	if(IsPlayerLogged(playerid))
 	{
 		SavePlayerAcc(playerid);
+		Clear(playerid);
 	}
 	return 1;
 }
@@ -449,6 +450,7 @@ stock Clear(playerid)
 {
 	pInfo[playerid] = pInfoDefault;
 	ClearPlayerInventory(playerid);
+	RemovePlayerAttachedObjects(playerid);
 	return 1;
 }
 stock SetPlayerSpawn(playerid)

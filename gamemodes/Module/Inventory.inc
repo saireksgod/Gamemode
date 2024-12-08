@@ -668,10 +668,7 @@ stock RemovePlayerAttachedObjects(playerid)
 {
 	for(new idx; idx < MAX_PLAYER_ATTACHED_OBJECTS; idx++)
 	{
-		if(IsPlayerAttachedObjectSlotUsed(playerid, idx))
-		{
-			RemovePlayerAttachedObject(playerid, idx);
-		}
+		if(IsPlayerAttachedObjectSlotUsed(playerid, idx)) RemovePlayerAttachedObject(playerid, idx);
 	}
     return true;
 }
