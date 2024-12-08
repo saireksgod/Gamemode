@@ -28,6 +28,7 @@ L1:
 #include <sscanf2>
 #include <Pawn.CMD>
 #include <Pawn.RakNet>
+#include <Pawn.Regex>
 #include <timerfix>
 #include <profiler>
 #include <TOTP>

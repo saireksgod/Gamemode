@@ -338,23 +338,30 @@ stock IsValidText(const text[]) {
 #if defined _ALS_IsValidNickName
 	#undef IsValidNickName
 #endif
-#define IsValidNickName IsValidNickNamea
-stock IsValidNickName(const nickname[])
+// #define IsValidNickName IsValidNickNamea
+// stock IsValidNickName(const nickname[])
+// {
+// 	if(strlen(nickname) < 6 || strlen(nickname) > 24) return 0;
+// 	new namesa[2][24];
+// 	if(sscanf(nickname,"p<_>s[24]s[24]",namesa[0],namesa[1])) return 0;
+// 	for(new i;i<2;i++)
+// 	{
+// 		for(new j,k=strlen(namesa[i]);j<k;j++)
+// 		{
+// 			switch(namesa[i][j]){
+// 				case 'A'..'Z', 'a'..'z': continue;
+// 				default: return 0;	
+// 			}	
+// 		}		
+// 	}
+// 	return 1;
+// }
+stock IsValidNickName(const input_string[])
 {
-	if(strlen(nickname) < 6 || strlen(nickname) > 24) return 0;
-	new namesa[2][24];
-	if(sscanf(nickname,"p<_>s[24]s[24]",namesa[0],namesa[1])) return 0;
-	for(new i;i<2;i++)
-	{
-		for(new j,k=strlen(namesa[i]);j<k;j++)
-		{
-			switch(namesa[i][j]){
-				case 'A'..'Z', 'a'..'z': continue;
-				default: return 0;	
-			}	
-		}		
-	}
-	return 1;
+    new regex:r_str = Regex_New("([A-Z]{1})([a-z]+)_([A-Z]{1})([a-z]+)");
+    new check = Regex_Check(input_string, r_str);
+    Regex_Delete(r_str);
+    return check;
 }
 static const NumberSimbols[5][7] = {
     {0,1,1,1,0,0,-1},

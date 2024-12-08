@@ -116,20 +116,22 @@ stock CreatePlayerAccount(playerid)
 	mysql_tquery(mysql,str_q,"LoadPlayerData", "d", playerid);
 	return 1;
 }
+#if !defined MINIMAL_EMAIL_LENGHT
+        #define MINIMAL_EMAIL_LENGHT 10
+#endif
 
-stock IsValidEMail(const email[])
+#if !defined MAXIMAL_EMAIL_LENGHT
+        #define MAXIMAL_EMAIL_LENGHT 42
+#endif
+stock IsValidEMail(const input_string[])
 {
-	for(new i;i < strlen(email);i ++) {
-		switch(email[i])
-		{
-			case 'A'..'Z', 'a'..'z', '0'..'9', '-', '_', '@', '.': continue;
-			default: return 0;
-		}
-	}
-	if(!TextFind(email,"@")) return 0;
-  	return 1;
-}
-
+    if(!(MINIMAL_EMAIL_LENGHT <= strlen(input_string) <= MAXIMAL_EMAIL_LENGHT)) return 0;
+        
+    new Regex:r_str = Regex_New("([A-Za-z0-9]{1})([A-Za-z0-9_\\.\\-]{3,30})@([a-z]{2,8})\\.([a-z]{2,4})");
+    new check = Regex_Check(input_string, r_str);
+    Regex_Delete(r_str);
+    return check;
+} 
 public: CheckPlayerAccount(playerid)
 {
 	SendPacket(playerid, CefUpdate, "confirmBrowserInitialize()");
