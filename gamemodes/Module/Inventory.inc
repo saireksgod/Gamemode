@@ -462,7 +462,6 @@ stock LoadInventory(playerid)
     str_q[0] = EOS;
     mysql_format(mysql,str_q,sizeof str_q,"SELECT * FROM items WHERE uid=%d AND container=1 LIMIT 1",GetPlayerAccountID(playerid));
     mysql_tquery(mysql,str_q,"CB_LoadInventory", "dd", playerid, 1);
-
     mysql_format(mysql,str_q,sizeof str_q,"SELECT * FROM items WHERE uid=%d AND container=0 LIMIT 1",GetPlayerAccountID(playerid));
     mysql_tquery(mysql,str_q,"CB_LoadInventory", "dd", playerid, 2);
     return 1;
@@ -516,18 +515,12 @@ stock GetFreeSlot(playerid,container=1)
     return -1;
 }
 stock GetPlayerItemSlot(playerid,item,container=1) {
-    for(new i; i < MAX_INV_ITEMS; i++) {
-        if(GetItem(playerid, container, i, PI_ID) == -1) continue;
-        if(GetItem(playerid, container, i, PI_ID) == item) return i;
-    }
+    for(new i; i < MAX_INV_ITEMS; i++)  if(GetItem(playerid, container, i, PI_ID) != -1 && GetItem(playerid, container, i, PI_ID) == item) return i;
     return -1;
 }
 public: OnItemsInterfaceClose(playerid) return SendPacket(playerid, CefHide, "InventoryNew");
-public: OnInventoryDisplayChange(playerid) {
-    if(PlayerInterfaces[playerid][IF_INVENTORY]) SendPacket(playerid, CefHide, "InventoryNew");
-    else OpenInventory(playerid,1);
-    return 1;
-}
+public: OnInventoryDisplayChange(playerid) return PlayerInterfaces[playerid][IF_INVENTORY] ? SendPacket(playerid, CefHide, "InventoryNew") : OpenInventory(playerid,1);
+
 stock OpenInventory(playerid, open=0)
 {
     if(!IsPlayerConnected(playerid) || !IsPlayerLogged(playerid)) return 1;
@@ -561,7 +554,7 @@ stock OpenInventory(playerid, open=0)
                     default: format(str_1,sizeof str_1,"%s[1,%d,99,%d,\"%s\",0,1,2.00,0],",str_1,i,GetPlayerItem(playerid,i,PI_EXTRATYPE),GetPlayerItem(playerid,i,PI_EXTRANAME));
                 }    
             }
-            default:continue;
+            default: continue;
         }
     }
     strdel(str_1,strlen(str_1)-1,strlen(str_1));
@@ -577,7 +570,6 @@ stock OpenInventory(playerid, open=0)
 }
 public:OnInventoryItemUse(playerid, const args[])
 {
-    printf("%s",args);
     extract args-> new container,slot;else return 1;
     if(GetItem(playerid,container,slot,PI_TYPE) <= 0) return OpenInventory(playerid);
 
@@ -633,7 +625,7 @@ public:OnInventoryItemUse(playerid, const args[])
 }
 public:AY_OnPlayerEdit(playerid,const args[]) {
     extract args-> new container,slot;else return 1;
-    if(container != 0 || container != 1) return 1;
+    if(!(0 <= container <= 1)) return 1;
     if(GetItem(playerid,container,slot,PI_TYPE) != 2) return 1;
     if(!GetItem(playerid,container,slot,PI_STATUS)) return GameText(playerid,"~r~Наденьте аксессуар",2000,1);
     EditAttachedObject(playerid,GetItem(playerid,container,slot,PI_STATUS));
@@ -725,7 +717,7 @@ stock GiveItem(playerid,item,count,extra=0,const extraname[] = "None")
             if(strcmp(extraname,"None")) format(GetPlayerItem(playerid,id,PI_EXTRANAME),32,extraname);
         }
         else { 
-            GameText(playerid,"~r~Ваш инвентарь полон!",3000,2);
+            //GameText(playerid,"~r~Ваш инвентарь полон!",3000,2);
             return 0;
         }
     }
@@ -748,18 +740,20 @@ CMD:giveacs(playerid,const params[])
 {
     if(!CheckAdmin(playerid,6)) return 0;
     extract params-> new to_player,acstype,acsmodel;else return SCM(playerid,COLOR_CHAT,!"Используйте: /giveacs [id игрока] [тип аксессуара] [id аксессура]");
-    if(!IsPlayerConnected(playerid) || !IsPlayerLogged(playerid)) return SCM(playerid,COLOR_CHAT,!"Такого игрока нет");
-    if(!GiveAcs(playerid,acstype,acsmodel)) return SCM(playerid,COLOR_CHAT,!"У игрока нету места в инвентаре!");
-    str_1[0] = EOS;
-    format(str_1,sizeof str_1,"[A] %s[%d] выдал аксессуар %s[%d]",GetPlayerNameEx(playerid),playerid,GetPlayerNameEx(to_player),to_player);
-    SCM(playerid,-1,str_1);
+    if(IsHavePlayer(to_player)) return SCM(playerid,COLOR_CHAT,!"Такого игрока нет");
+    if(!GiveAcs(to_player,acstype,acsmodel)) return SCM(playerid,COLOR_CHAT,!"У игрока нету места в инвентаре!");
+    format(str_1,sizeof str_1,"[A] {CECECE}%s[%d] выдал %s[%d] аксессуар",GetPlayerNameEx(playerid),playerid,GetPlayerNameEx(to_player),to_player);
+    SendMessageToAdmins(0xff9300ff, str_1);
     return true;
 }
 CMD:giveitem(playerid,params[]) 
 {
     if(!CheckAdmin(playerid,6)) return 0;
-    extract params-> new itemid, count; else return SCM(playerid,0xCECECEFF, !"Используйте: /giveitem [id предмета] [кол-во]");
-    GiveItem(playerid,itemid,count);
+    extract params-> new to_player, itemid, count; else return SCM(playerid,0xCECECEFF, !"Используйте: /giveitem [id игрока] [id предмета] [кол-во]");
+    if(IsHavePlayer(to_player)) return SCM(playerid, COLOR_CHAT, !"Такого игрока нет");
+    if(!GiveItem(to_player,itemid,count)) return SCM(playerid,COLOR_RED,!"У игрока полный инвентарь");
+    format(str_1,sizeof str_1,"[A] {CECECE}Администратор %s[%d] выдал %s[%d] предмет %d в кол-во %d шт.",GetPlayerNameEx(playerid),playerid,GetPlayerNameEx(to_player),to_player,itemid,count);
+    SendMessageToAdmins(0xff9300ff, str_1);
     return true;
 }
 // static const InvItemGun[51] = {0,0,0,32,7,8,125,0,9,10,33,34,35,36,37,0,24,43,11,0,0,0,12,13,19,14,15,0,17,18,21,20,0,42,22,23,0,0,0,45,46,0,5,39,0,0,40,0};

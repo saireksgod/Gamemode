@@ -407,8 +407,7 @@ stock SendMessageToAdmins(const color,const text[], const lvladm=1)
 {
 	foreach(new i:Player) 
 	{
-		if(pInfo[i][P_ADMIN] < lvladm) continue;
-		if(!pInfo[i][pAdmLogin]) continue;
+		if(pInfo[i][P_ADMIN] < lvladm || !pInfo[i][pAdmLogin]) continue;
 		SCM(i, color, text);
 	}
 }
@@ -647,16 +646,16 @@ cmd:admins(playerid)
     }
     return 1;
 }
-cmd:spawn(playerid, i[])
+cmd:spawn(playerid, const params[])
 {
 	if(!CheckAdmin(playerid, 2)) return 0;
-	extract i -> new id; else return SCM(playerid, -1, "/spawn [ID Игрока]");
-	PlayerSpawn(playerid);
+	extract params -> new to_player; else return SCM(playerid, COLOR_CHAT, !"Используйте: /spawn [id игрока]");
+	PlayerSpawn(to_player);
 	return 1;
 }
 cmd:alogin(playerid)
 {
-	if(GetPlayerAdminEx(playerid) < 1) return 0;
+	if(!CheckAdmin(playerid,1)) return 0;
 	if(!strcmp(pInfo[playerid][pAdmPass], "-1")) SPD(playerid, dAdmPassCreate, DSP, "Система безопастности - Alogin","{FFFFFF}Создайте свой личный пароль для дальнейшего использования прав администратора\n{ffffff}Длина должна быть не менее 6 и не более 32\n{ffffff}Нельзя использовать русские символы", "Далее", "Закрыть");
 	else SPD(playerid, dAdmLogin, DSP, "Система безопастности - Alogin","{FFFFFF}Введите пароль:", "Далее", "Закрыть");
 	return 1;
@@ -666,7 +665,6 @@ stock SetPlayerHealthEx(playerid, Float: health)
 {
 	pInfo[playerid][P_HP] = health;
 	if(pInfo[playerid][P_HP] > 100.0) pInfo[playerid][P_HP] = 100.0;
-	SCM(playerid,-1,"SCAM");
 	return SetPlayerHealth(playerid, pInfo[playerid][P_HP]);
 }
 stock UpdateDataInt(playerid, field[], value) return mysql_queryf(mysql, "UPDATE users SET %s=%d WHERE id=%d LIMIT 1", false, field, value, GetPlayerAccountID(playerid));
@@ -680,17 +678,12 @@ stock ProxDetector(Float:radi, playerid, string[], colour)
 		GetPlayerPos(playerid, X, Y, Z);
 		foreach(new i: Player)
 		{
-			if(!IsPlayerConnected(i) || !IsPlayerLogged(i)) continue;
+			if(IsHavePlayer(i)) continue;
 			if(GetPlayerVirtualWorld(playerid) != GetPlayerVirtualWorld(i)) continue;
 			if(IsPlayerInRangeOfPoint(i,radi,X,Y,Z)) SCM(i, colour, string);
 		}
 	}
 	return 1;
-}
-stock GetString(const param1[], const param2[], log = 0)
-{
-	if(!log) return !strcmp(param1, param2, false);
-	else return !strcmp(param1, param2, true);
 }
 stock GetNumberOfPlayersOnThisIP(test_ip[])
 {
@@ -717,15 +710,8 @@ static const g_anim_libs[][13] =
 stock PreLoadPlayerAnims(playerid)
 {
 	for(new idx; idx < sizeof g_anim_libs; idx ++)
-	{
-		PreloadAnimLib(playerid, g_anim_libs[idx]);
-	}
+		ApplyAnimation(playerid,g_anim_libs[idx],"null",0.0,0,0,0,0,0);
 	return 1;
-}
-stock PreloadAnimLib(playerid, animlib[])
-{
-   ApplyAnimation(playerid,animlib,"null",0.0,0,0,0,0,0);
-   return 1;
 }
 stock OnInteractionsClick(playerid, eventid) {
     House_InteractionsClick(playerid, eventid);
