@@ -116,7 +116,7 @@ native SetTimerEx_(func[], interval, delay, count, format[], {Float, _}:...);
  * <param name="repeating">Whether this timer will repeat or will execute only one time.</param>
  * <returns>The ID of the timer.</returns>
  */
-native SetPlayerTimer(playerid, func[], interval, repeating);
+native SetPlayerTimer(playerid,const func[], interval, repeating);
 
 /**
  * <summary>Basic SetPlayerTimerEx.</summary>

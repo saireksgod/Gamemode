@@ -156,13 +156,13 @@ native PlayerTextDrawSetPreviewRot(playerid, PlayerText:text, Float:fRotX, Float
 native PlayerTextDrawSetPreviewVehCol(playerid, PlayerText:text, color1, color2);
 
 // Per-player variable system (PVars)
-native SetPVarInt(playerid, varname[], int_value);
-native GetPVarInt(playerid, varname[]);
-native SetPVarString(playerid, varname[], string_value[]);
-native GetPVarString(playerid, varname[], string_return[], len);
-native SetPVarFloat(playerid, varname[], Float:float_value);
-native Float:GetPVarFloat(playerid, varname[]);
-native DeletePVar(playerid, varname[]);
+native SetPVarInt(playerid,const varname[], int_value);
+native GetPVarInt(playerid,const varname[]);
+native SetPVarString(playerid,const varname[],const string_value[]);
+native GetPVarString(playerid,const varname[],const string_return[], len);
+native SetPVarFloat(playerid,const varname[], Float:float_value);
+native Float:GetPVarFloat(playerid,const varname[]);
+native DeletePVar(playerid,const varname[]);
 
 // PVar enumeration
 #define PLAYER_VARTYPE_NONE			0
@@ -184,7 +184,7 @@ native GetPlayerVehicleSeat(playerid);
 native RemovePlayerFromVehicle(playerid);
 native TogglePlayerControllable(playerid, toggle);
 native PlayerPlaySound(playerid, soundid, Float:x, Float:y, Float:z);
-native ApplyAnimation(playerid, animlib[], animname[], Float:fDelta, loop, lockx, locky, freeze, time, forcesync = 0);
+native ApplyAnimation(playerid,const animlib[],const animname[], Float:fDelta, loop, lockx, locky, freeze, time, forcesync = 0);
 native ClearAnimations(playerid, forcesync = 0);
 native GetPlayerAnimationIndex(playerid); // return the index of any running applied animations (0 if none are running)
 native GetAnimationName(index, animlib[], len1, animname[], len2); // get the animation lib/name for the index

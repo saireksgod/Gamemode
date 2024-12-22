@@ -111,12 +111,12 @@ native mysql_option(E_MYSQL_OPTION:type, value);
 
 native mysql_errno(connectionHandle = 1);
 native mysql_escape_string(const source[], destination[], connectionHandle = 1, max_len = sizeof(destination));
-native mysql_format(connectionHandle, output[], len, format[], {Float,_}:...);
-native mysql_pquery(connectionHandle, query[], callback[] = "", format[] = "", {Float,_}:...);
+native mysql_format(connectionHandle,const output[], len,const format[], {Float,_}:...);
+native mysql_pquery(connectionHandle,const query[],const callback[] = "",const format[] = "", {Float,_}:...);
 /*
 native mysql_pquery_inline(connHandle, query[], callback:Callback, format[], {Float,_}:...); //y_inline
 */
-native mysql_tquery(connectionHandle, query[], callback[] = "", format[] = "", {Float,_}:...);
+native mysql_tquery(connectionHandle,const query[],const callback[] = "",const format[] = "", {Float,_}:...);
 /*
 native mysql_tquery_inline(connHandle, query[], callback:Callback, format[], {Float,_}:...); //y_inline
 */
@@ -124,7 +124,7 @@ native Cache:mysql_query(conhandle, query[], bool:use_cache = true);
 
 native mysql_stat(destination[], connectionHandle = 1, max_len = sizeof(destination));
 native mysql_get_charset(destination[], connectionHandle = 1, max_len = sizeof(destination));
-native mysql_set_charset(charset[], connectionHandle = 1);
+native mysql_set_charset(const charset[], connectionHandle = 1);
 
 
 // Cache functions

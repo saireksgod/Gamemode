@@ -527,7 +527,7 @@ cmd:delveh(playerid) {
 	DeletePVar(playerid, !"created_veh");
 	return SendClientMessage(playerid, -1, !"[Информация]: Транспорт был успешно удалён.");
 }
-CMD:vget(playerid, params[])
+CMD:vget(playerid,const params[])
 {
 	if(!CheckAdmin(playerid,5)) return 0;
 	extract params -> new vehicleid; else return SendClientMessage(playerid, 0xCECECEFF, !"Используйте: /vget [id транспорта]");
@@ -542,7 +542,7 @@ CMD:vget(playerid, params[])
 
 	return 1;
 }
-cmd:hp(playerid, params[])
+cmd:hp(playerid,const params[])
 {
 	if(!CheckAdmin(playerid,3)) return 0;
     if(sscanf(params, "dd", params[0], params[1])) return SCM(playerid, 0xFF9300FF, !"[Используйте] {ffffff}/hp [ID игрока] [Health]");
@@ -556,7 +556,7 @@ cmd:hp(playerid, params[])
 	SCM(params[0], 0xFF9300FF, str_1);
 	return 1;
 }
-cmd:a(playerid, params[])
+cmd:a(playerid,const params[])
 {
 	if(!CheckAdmin(playerid, 1)) return 0;
 	str_2[0] = EOS;
@@ -566,7 +566,7 @@ cmd:a(playerid, params[])
     SendMessageToAdmins(0xff9300ff, str_1);
     return 1;
 }
-cmd:givemoney(playerid, params[])
+cmd:givemoney(playerid,const params[])
 {
 	if(!CheckAdmin(playerid, 6)) return 0;
 	extract params -> new id, money; else return SCM(playerid, 0xff9300ff, "[Используйте] {ffffff} /givemoney [id игрока] [money]");
@@ -576,7 +576,7 @@ cmd:givemoney(playerid, params[])
 	GiveMoney(id,money);
 	return 1;
 }
-cmd:kick(playerid, params[])
+cmd:kick(playerid,const params[])
 {
 	if(!CheckAdmin(playerid, 2)) return 0;
 	if(sscanf(params, "ds[64]", params[0], params[1])) return SCM(playerid, 0xff9300ff, "[Используйте] {ffffff}/kick [ID игрока] [причина]");
@@ -667,10 +667,10 @@ stock SetPlayerHealthEx(playerid, Float: health)
 	if(pInfo[playerid][P_HP] > 100.0) pInfo[playerid][P_HP] = 100.0;
 	return SetPlayerHealth(playerid, pInfo[playerid][P_HP]);
 }
-stock UpdateDataInt(playerid, field[], value) return mysql_queryf(mysql, "UPDATE users SET %s=%d WHERE id=%d LIMIT 1", false, field, value, GetPlayerAccountID(playerid));
-stock UpdateDataStr(playerid, field[], value[]) return mysql_queryf(mysql, "UPDATE users SET %s=%s WHERE id=%d LIMIT 1", false, field, value, GetPlayerAccountID(playerid));
+stock UpdateDataInt(playerid,const field[], value) return mysql_queryf(mysql, "UPDATE users SET %s=%d WHERE id=%d LIMIT 1", false, field, value, GetPlayerAccountID(playerid));
+stock UpdateDataStr(playerid,const field[],const value[]) return mysql_queryf(mysql, "UPDATE users SET %s=%s WHERE id=%d LIMIT 1", false, field, value, GetPlayerAccountID(playerid));
 
-stock ProxDetector(Float:radi, playerid, string[], colour)
+stock ProxDetector(Float:radi, playerid,const string[], colour)
 {
 	if(IsPlayerConnected(playerid))
 	{
@@ -685,7 +685,7 @@ stock ProxDetector(Float:radi, playerid, string[], colour)
 	}
 	return 1;
 }
-stock GetNumberOfPlayersOnThisIP(test_ip[])
+stock GetNumberOfPlayersOnThisIP(const test_ip[])
 {
 	new against_ip[32+1], ip_count = 0;
 	foreach_player(x) 
